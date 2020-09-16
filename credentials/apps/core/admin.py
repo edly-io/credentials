@@ -41,6 +41,11 @@ class SiteConfigurationAdmin(admin.ModelAdmin):
                 'enable_twitter_sharing',
             )
         }),
+        (_('Edly Settings'), {
+            'fields': (
+                'edly_client_branding_and_django_settings',
+            )
+        })
     )
 
 
