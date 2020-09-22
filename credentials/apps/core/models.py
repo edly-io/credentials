@@ -2,6 +2,7 @@
 
 import datetime
 import hashlib
+import logging
 
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
@@ -11,6 +12,9 @@ from django.db import models
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 from edx_rest_api_client.client import EdxRestApiClient
+from jsonfield.fields import JSONField
+
+log = logging.getLogger(__name__)
 
 
 class SiteConfiguration(models.Model):
@@ -129,6 +133,13 @@ class SiteConfiguration(models.Model):
         help_text=_('Enable sharing via Twitter'),
         default=True
     )
+    edly_client_branding_and_django_settings = JSONField(
+        verbose_name=_('Edly client theme branding & Django settings'),
+        help_text=_('JSON string containing edly client theme branding & Django settings.'),
+        null=False,
+        blank=False,
+        default={}
+    )
 
     def __str__(self):
         return self.site.name
@@ -245,6 +256,25 @@ class SiteConfiguration(models.Model):
             cache.set(cache_key, user_data, settings.USER_CACHE_TTL)
 
         return user_data
+
+    def get_edly_configuration_value(self, name, default=None):
+        """
+        Return Configuration value for the key specified as name argument.
+        Function logs a message if there is an error retrieving a key.
+
+        Arguments:
+            name (str): Name of the key for which to return configuration value.
+            default: default value to return if key is not found in the configuration
+
+        Returns:
+            Configuration value for the given key or returns `None` if default is not available.
+        """
+        try:
+            return self.edly_client_branding_and_django_settings.get(name, default)
+        except AttributeError as error:
+            log.exception('Invalid JSON data. \n [%s]', error)
+
+        return default
 
 
 class User(AbstractUser):

@@ -72,6 +72,7 @@ INSTALLED_APPS += THIRD_PARTY_APPS
 INSTALLED_APPS += PROJECT_APPS
 
 MIDDLEWARE_CLASSES = (
+    'credentials.apps.edx_credentials_extensions.edly_credentials_app.middleware.SettingsOverrideMiddleware',
     'edx_django_utils.cache.middleware.RequestCacheMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
@@ -275,6 +276,10 @@ TEMPLATES = [
                 'django.template.context_processors.tz',
                 'django.contrib.messages.context_processors.messages',
                 'credentials.apps.core.context_processors.core',
+
+                # edly context processor to apply dynamic theming
+                'credentials.apps.edx_credentials_extensions.edly_credentials_app.context_processor.dynamic_theming_context',
+                'ecredentials.apps.edx_credentials_extensions.edly_credentials_app.context_processor.edly_app_context',
             ),
             'debug': True,  # Django will only display debug pages if the global DEBUG setting is set to True.
         }
