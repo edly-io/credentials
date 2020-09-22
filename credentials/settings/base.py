@@ -279,7 +279,7 @@ TEMPLATES = [
 
                 # edly context processor to apply dynamic theming
                 'credentials.apps.edx_credentials_extensions.edly_credentials_app.context_processor.dynamic_theming_context',
-                'ecredentials.apps.edx_credentials_extensions.edly_credentials_app.context_processor.edly_app_context',
+                'credentials.apps.edx_credentials_extensions.edly_credentials_app.context_processor.edly_app_context',
             ),
             'debug': True,  # Django will only display debug pages if the global DEBUG setting is set to True.
         }
