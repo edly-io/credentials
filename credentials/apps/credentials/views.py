@@ -111,9 +111,14 @@ class RenderCredential(SocialMediaMixin, ThemeViewMixin, TemplateView):
     def get_credential_template(self):
         template_names = []
         credential_type = self.user_credential.credential
+        organization = self.user_credential.credential.program_details.organizations[0]
+        org_shortname = ''
+        if organization:
+            org_shortname = organization.key
 
         # NOTE: In the future we will need to account for other types of credentials besides programs.
         template_names += [
+            'credentials/programs/{org_shortname}/certificate.html'.format(org_shortname=org_shortname),
             'credentials/programs/{uuid}/certificate.html'.format(uuid=credential_type.program_uuid),
             'credentials/programs/{type}/certificate.html'.format(
                 type=slugify(credential_type.program_details.type)),
