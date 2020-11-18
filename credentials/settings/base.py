@@ -66,6 +66,7 @@ PROJECT_APPS = [
     'credentials.apps.edx_django_extensions',
     'credentials.apps.credentials_theme_openedx',
     'credentials.apps.records',
+    'credentials.apps.edx_credentials_extensions.edly_credentials_app'
 ]
 
 INSTALLED_APPS += THIRD_PARTY_APPS
@@ -434,3 +435,8 @@ if os.environ.get('ENABLE_DJANGO_TOOLBAR', False):
         'debug_toolbar.panels.redirects.RedirectsPanel',
     ]
 # END DJANGO DEBUG TOOLBAR CONFIGURATION
+
+# Edly user info cookie specific values
+EDLY_USER_INFO_COOKIE_NAME = 'edly-user-info'
+EDLY_COOKIE_SECRET_KEY = 'EDLY-COOKIE-SECRET-KEY'
+EDLY_JWT_ALGORITHM = 'HS256'
