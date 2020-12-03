@@ -48,6 +48,11 @@ urlpatterns = auth_urlpatterns + [
     url(r'^hijack/', include('hijack.urls', namespace='hijack')),
 ]
 
+# Edly Urls
+urlpatterns += [
+    url(r'^edly-api/', include('credentials.apps.edx_credentials_extensions.edly_credentials_app.urls', namespace='edly_api')),
+]
+
 handler500 = 'credentials.apps.core.views.render_500'
 
 # Add media and extra urls

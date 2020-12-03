@@ -58,3 +58,8 @@ DB_OVERRIDES = dict(
 
 for override, value in DB_OVERRIDES.items():
     DATABASES['default'][override] = value
+
+# Edly user info cookie specific values
+EDLY_USER_INFO_COOKIE_NAME = environ.get('EDLY_USER_INFO_COOKIE_NAME', EDLY_USER_INFO_COOKIE_NAME)
+EDLY_COOKIE_SECRET_KEY = environ.get('EDLY_COOKIE_SECRET_KEY', EDLY_COOKIE_SECRET_KEY)
+EDLY_JWT_ALGORITHM = environ.get('EDLY_JWT_ALGORITHM', EDLY_JWT_ALGORITHM)

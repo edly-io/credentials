@@ -37,6 +37,7 @@ class SiteConfigurationFactory(django.DjangoModelFactory):
         model = SiteConfiguration
 
     site = SubFactory(SiteFactory)
+    edx_org_short_name = Faker('word')
     lms_url_root = Faker('url')
     catalog_api_url = Faker('url')
     platform_name = Faker('word')
