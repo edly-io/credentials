@@ -1,11 +1,12 @@
 """
 Views for Edly Program Certificate Configuration API.
 """
+from django.db.models import Prefetch
 from rest_framework import status, viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from credentials.apps.credentials.models import ProgramCertificate
+from credentials.apps.credentials.models import ProgramCertificate, Signatory
 from credentials.apps.edx_credentials_extensions.edly_credentials_app.api.permissions import CanAccessCurrentSite
 from credentials.apps.edx_credentials_extensions.edly_credentials_app.api.serializers import (
     ProgramCertificateConfigurationSerializer
@@ -20,7 +21,11 @@ class ProgramCertificateConfigurationViewSet(viewsets.ModelViewSet):
     lookup_value_regex = '[0-9a-f-]+'
     permission_classes = (IsAuthenticated, CanAccessCurrentSite)
     serializer_class = ProgramCertificateConfigurationSerializer
-    queryset = ProgramCertificate.objects.all()
+
+    def get_queryset(self):
+        return ProgramCertificate.objects.all().prefetch_related(
+            Prefetch('signatories', queryset=Signatory.objects.all().order_by('-id'))
+        )
 
     def update(self, request, *args, **kwargs):
         """
