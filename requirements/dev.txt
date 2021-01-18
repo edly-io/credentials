@@ -142,6 +142,7 @@ websocket-client==0.57.0  # via docker, docker-compose
 wrapt==1.11.2             # via -r requirements/test.txt, astroid
 xss-utils==0.1.3          # via -r requirements/test.txt
 zipp==1.2.0               # via -r requirements/test.txt, importlib-metadata, importlib-resources
+jsonfield==3.0.0          # via -r requirements/base.txt
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools

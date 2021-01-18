@@ -4,6 +4,6 @@ from credentials.apps.edx_credentials_extensions.edly_credentials_app.api.v1.vie
 
 
 router = routers.SimpleRouter()
-router.register(r'program-certificate-configuration', ProgramCertificateConfigurationViewSet, base_name='program-certificate-configuration')
+router.register(r'program-certificate-configuration', ProgramCertificateConfigurationViewSet, basename='program-certificate-configuration')
 
 urlpatterns = router.urls

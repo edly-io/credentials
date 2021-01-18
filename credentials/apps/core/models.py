@@ -12,7 +12,7 @@ from django.db import models
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 from edx_rest_api_client.client import EdxRestApiClient
-from jsonfield.fields import JSONField
+from jsonfield import JSONField
 
 log = logging.getLogger(__name__)
 

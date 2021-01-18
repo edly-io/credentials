@@ -1,11 +1,14 @@
 from logging import getLogger
 from django.conf import settings
 from django.contrib.sites.shortcuts import get_current_site
+from django.utils.deprecation import MiddlewareMixin
+
+from credentials.apps.core.models import SiteConfiguration
 
 logger = getLogger(__name__)
 
 
-class SettingsOverrideMiddleware(object):
+class SettingsOverrideMiddleware(MiddlewareMixin):
     """
     Django middleware to override django settings from site configuration.
     """
