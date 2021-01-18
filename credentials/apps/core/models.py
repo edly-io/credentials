@@ -18,7 +18,7 @@ log = logging.getLogger(__name__)
 
 
 class SiteConfiguration(models.Model):
-    site = models.OneToOneField(Site, null=False, blank=False)
+    site = models.OneToOneField(Site, null=False, blank=False, on_delete=models.CASCADE)
     edx_org_short_name = models.CharField(
         max_length=255,
         unique=True,
@@ -157,15 +157,15 @@ class SiteConfiguration(models.Model):
 
     @property
     def oauth2_provider_url(self):
-        return settings.SOCIAL_AUTH_EDX_OIDC_URL_ROOT
+        return settings.BACKEND_SERVICE_EDX_OAUTH2_PROVIDER_URL
 
     @property
     def oauth2_client_id(self):
-        return settings.SOCIAL_AUTH_EDX_OIDC_KEY
+        return settings.BACKEND_SERVICE_EDX_OAUTH2_KEY
 
     @property
     def oauth2_client_secret(self):
-        return settings.SOCIAL_AUTH_EDX_OIDC_SECRET
+        return settings.BACKEND_SERVICE_EDX_OAUTH2_SECRET
 
     @property
     def user_api_url(self):
@@ -289,7 +289,7 @@ class SiteConfiguration(models.Model):
 
 
 class User(AbstractUser):
-    """ Custom user model for use with OpenID Connect. """
+    """ Custom user model for use with python-social-auth via edx-auth-backends. """
     full_name = models.CharField(_('Full Name'), max_length=255, blank=True, null=True)
 
     @property
@@ -299,11 +299,11 @@ class User(AbstractUser):
         Assumes user has authenticated at least once with edX Open ID Connect.
         """
         try:
-            return self.social_auth.first().extra_data['access_token']
+            return self.social_auth.first().extra_data['access_token']  # pylint: disable=no-member
         except Exception:  # pylint: disable=broad-except
             return None
 
-    class Meta(object):
+    class Meta:
         get_latest_by = 'date_joined'
 
     def __str__(self):

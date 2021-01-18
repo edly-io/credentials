@@ -42,6 +42,7 @@ INSTALLED_APPS = [
 THIRD_PARTY_APPS = [
     'release_util',
     'rest_framework',
+    'rest_framework_jwt',
     'social_django',
     'sortedm2m',
     'statici18n',
@@ -55,7 +56,7 @@ THIRD_PARTY_APPS = [
     'rest_framework_swagger',
     'hijack',
     'compat',
-    'xss_utils'
+    'xss_utils',
 ]
 
 PROJECT_APPS = [
@@ -72,7 +73,7 @@ PROJECT_APPS = [
 INSTALLED_APPS += THIRD_PARTY_APPS
 INSTALLED_APPS += PROJECT_APPS
 
-MIDDLEWARE_CLASSES = (
+MIDDLEWARE = (
     'credentials.apps.edx_credentials_extensions.edly_credentials_app.middleware.SettingsOverrideMiddleware',
     'edx_django_utils.cache.middleware.RequestCacheMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -80,7 +81,6 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.contrib.sites.middleware.CurrentSiteMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -103,11 +103,13 @@ WSGI_APPLICATION = 'credentials.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.',
-        'NAME': '',
-        'USER': '',
-        'PASSWORD': '',
-        'HOST': '',  # Empty for localhost through domain sockets or '127.0.0.1' for localhost through TCP.
+        'NAME': 'credentials',
+        'USER': 'credentials001',
+        'PASSWORD': 'password',
+        'HOST': 'localhost',  # Empty for localhost through domain sockets or '127.0.0.1' for localhost through TCP.
         'PORT': '',  # Set to empty string for default.
+        'ATOMIC_REQUESTS': False,
+        'CONN_MAX_AGE': 60,
     }
 }
 
@@ -306,14 +308,13 @@ LOGOUT_URL = '/logout/'
 AUTH_USER_MODEL = 'core.User'
 
 AUTHENTICATION_BACKENDS = (
-    'auth_backends.backends.EdXOpenIdConnect',
+    'auth_backends.backends.EdXOAuth2',
     'django.contrib.auth.backends.ModelBackend',
 )
 
 ENABLE_AUTO_AUTH = False
 AUTO_AUTH_USERNAME_PREFIX = 'auto_auth_'
 
-OAUTH2_PROVIDER_URL = None
 OAUTH_ID_TOKEN_EXPIRATION = 60
 
 SOCIAL_AUTH_STRATEGY = 'auth_backends.strategies.EdxDjangoStrategy'
@@ -337,12 +338,15 @@ SOCIAL_AUTH_PIPELINE = (
     'credentials.apps.core.utils.update_full_name',
 )
 
-# Set these to the correct values for your OAuth2/OpenID Connect provider (e.g., devstack)
-SOCIAL_AUTH_EDX_OIDC_KEY = 'replace-me'
-SOCIAL_AUTH_EDX_OIDC_SECRET = 'replace-me'
-SOCIAL_AUTH_EDX_OIDC_URL_ROOT = 'replace-me'
-SOCIAL_AUTH_EDX_OIDC_LOGOUT_URL = 'replace-me'
-SOCIAL_AUTH_EDX_OIDC_ID_TOKEN_DECRYPTION_KEY = SOCIAL_AUTH_EDX_OIDC_SECRET
+# Set these to the correct values for your OAuth2 provider (e.g., devstack)
+SOCIAL_AUTH_EDX_OAUTH2_KEY = 'credentials-sso-key'
+SOCIAL_AUTH_EDX_OAUTH2_SECRET = 'credentials-sso-secret'
+SOCIAL_AUTH_EDX_OAUTH2_ISSUER = 'http://127.0.0.1:8000'
+SOCIAL_AUTH_EDX_OAUTH2_URL_ROOT = 'http://127.0.0.1:8000'
+SOCIAL_AUTH_EDX_OAUTH2_LOGOUT_URL = 'http://127.0.0.1:8000/logout'
+BACKEND_SERVICE_EDX_OAUTH2_KEY = 'credentials-backend-service-key'
+BACKEND_SERVICE_EDX_OAUTH2_SECRET = 'credentials-backend-service-secret'
+BACKEND_SERVICE_EDX_OAUTH2_PROVIDER_URL = 'http://127.0.0.1:8000/logout'
 
 # Request the user's permissions in the ID token
 EXTRA_SCOPE = ['permissions']
@@ -362,12 +366,22 @@ USER_CACHE_TTL = 30 * 60
 CREDENTIALS_SERVICE_USER = 'credentials_service_user'
 
 JWT_AUTH = {
-    'JWT_ISSUERS': [],
+    'JWT_ISSUER': [
+        {
+            'AUDIENCE': 'SET-ME-PLEASE',
+            'ISSUER': 'http://127.0.0.1:8000/oauth2',
+            'SECRET_KEY': 'SET-ME-PLEASE'
+        }
+    ],
     'JWT_ALGORITHM': 'HS256',
     'JWT_VERIFY_EXPIRATION': True,
     'JWT_PAYLOAD_GET_USERNAME_HANDLER': lambda d: d.get('preferred_username'),
     'JWT_LEEWAY': 1,
     'JWT_DECODE_HANDLER': 'edx_rest_framework_extensions.auth.jwt.decoder.jwt_decode_handler',
+    'JWT_PUBLIC_SIGNING_JWK_SET': None,
+    'JWT_AUTH_COOKIE_HEADER_PAYLOAD': 'edx-jwt-cookie-header-payload',
+    'JWT_AUTH_COOKIE_SIGNATURE': 'edx-jwt-cookie-signature',
+    'JWT_AUTH_HEADER_PREFIX': 'JWT',
 }
 
 # Email sending
@@ -384,7 +398,6 @@ LOGGING = get_logger_config(debug=DEBUG, dev_env=True, local_loglevel='DEBUG')
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'credentials.apps.api.authentication.JwtAuthentication',
-        'credentials.apps.api.authentication.BearerAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ),
     'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend',),
@@ -414,7 +427,7 @@ if os.environ.get('ENABLE_DJANGO_TOOLBAR', False):
         'debug_toolbar',
     ]
 
-    MIDDLEWARE_CLASSES += (
+    MIDDLEWARE += (
         'debug_toolbar.middleware.DebugToolbarMiddleware',
     )
 
@@ -435,6 +448,29 @@ if os.environ.get('ENABLE_DJANGO_TOOLBAR', False):
         'debug_toolbar.panels.redirects.RedirectsPanel',
     ]
 # END DJANGO DEBUG TOOLBAR CONFIGURATION
+
+USERNAME_REPLACEMENT_WORKER = "replace with valid username"
+
+CSRF_COOKIE_SECURE = False
+FILE_STORAGE_BACKEND = {}
+EXTRA_APPS = []
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+STATICFILES_STORAGE = "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    }
+}
+EDX_DRF_EXTENSIONS = {
+    "OAUTH2_USER_INFO_URL": "http://127.0.0.1:8000/oauth2/user_info"
+}
+API_ROOT = None
+MEDIA_STORAGE_BACKEND = {
+    'DEFAULT_FILE_STORAGE': 'django.core.files.storage.FileSystemStorage',
+    'MEDIA_ROOT': MEDIA_ROOT,
+    'MEDIA_URL': MEDIA_URL
+}
+SOCIAL_AUTH_REDIRECT_IS_HTTPS = False
 
 # Edly user info cookie specific values
 EDLY_USER_INFO_COOKIE_NAME = 'edly-user-info'

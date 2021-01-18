@@ -14,7 +14,6 @@ class CreateOrUpdateSiteCommandTests(SiteMixin, TestCase):
     faker = Faker()
 
     def setUp(self):
-        # pylint: disable=no-member
         super(CreateOrUpdateSiteCommandTests, self).setUp()
         self.site_configuration = SiteConfigurationFactory.build(segment_key=self.faker.word())
 
@@ -79,7 +78,7 @@ class CreateOrUpdateSiteCommandTests(SiteMixin, TestCase):
 
     def test_create_site(self):
         """ Verify the command creates Site and SiteConfiguration. """
-        site_domain = self.faker.domain_name()  # pylint: disable=no-member
+        site_domain = self.faker.domain_name()
 
         self._call_command(
             site_domain=site_domain,
@@ -91,7 +90,7 @@ class CreateOrUpdateSiteCommandTests(SiteMixin, TestCase):
 
     def test_update_site(self):
         """ Verify the command updates Site and SiteConfiguration. """
-        expected_site_domain = self.faker.domain_name()  # pylint: disable=no-member
+        expected_site_domain = self.faker.domain_name()
         expected_site_name = 'Fake Credentials Server'
         site = SiteFactory()
 
@@ -149,7 +148,6 @@ class CreateOrUpdateSiteCommandTests(SiteMixin, TestCase):
     def test_enable_social_sharing(self, flag_name):
         """ Verify the command supports activating social sharing functionality. """
 
-        # pylint: disable=no-member
         self._call_command(
             site_domain=self.site.domain,
             site_name=self.site.name,
@@ -163,7 +161,6 @@ class CreateOrUpdateSiteCommandTests(SiteMixin, TestCase):
         """ Verify the Facebook app ID is required to enable Facebook sharing. """
         kwargs = {'enable_facebook_sharing': True}
 
-        # pylint: disable=no-member
         with self.assertRaisesMessage(CommandError, 'A Facebook app ID must be supplied to enable Facebook sharing'):
             self._call_command(site_domain=self.site.domain, site_name=self.site.name, **kwargs)
 

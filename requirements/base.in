@@ -1,0 +1,50 @@
+# Core dependencies for running credentials
+#
+# DON'T JUST ADD NEW DEPENDENCIES!!!
+#
+# If you open a pull request that adds a new dependency, you should:
+#   * verify that the dependency has a license compatible with AGPLv3
+#   * confirm that it has no system requirements beyond what we already install
+#   * run "make upgrade" to update the detailed requirements files
+
+-c constraints.txt
+
+analytics-python
+coreapi
+django
+django-debug-toolbar
+django-hijack
+django-extensions
+django-filter
+django-rest-swagger
+django-sortedm2m
+django-statici18n
+django-storages
+django-waffle
+django-webpack-loader
+djangorestframework
+edx-ace
+edx-auth-backends
+edx-django-release-util
+edx-django-sites-extensions
+edx-django-utils
+edx-drf-extensions
+edx-opaque-keys
+edx-rest-api-client
+markdown
+mysqlclient
+newrelic
+pillow
+pygments
+python-memcached
+pytz
+requests
+six
+xss-utils
+
+# TODO Install in configuration
+git+https://github.com/edx/credentials-themes.git@0.1.30#egg=edx_credentials_themes==0.1.30
+
+-e git+https://github.com/jsocol/django-ratelimit.git@72edbe8949fbf6699848e5847645a1998f121d46#egg=django-ratelimit
+
+git+https://github.com/python-social-auth/social-app-django.git@c00d23c2b45c3317bd35b15ad1b959338689cef8#egg=social-auth-app-django

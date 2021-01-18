@@ -1,8 +1,5 @@
 language: python
 
-python:
-  - "3.5"
-
 branches:
   only:
     - master
@@ -25,18 +22,27 @@ before_install:
 
 matrix:
   include:
-    - env: TESTNAME=quality-and-translations
-
-      # Doing so is a waste of time since they won't be used.
+    - python: 3.5
+      env: TESTNAME=quality-and-translations
       install: true
-
       script:
         - make exec-requirements
         - make exec-check_translations_up_to_date
         - make exec-validate-translations
         - make exec-quality
+        - make exec-check_keywords
+    - python: 3.8
+      env: TESTNAME=quality-and-translations
+      install: true
+      script:
+        - make exec-requirements
+        - make exec-check_translations_up_to_date
+        - make exec-validate-translations
+        - make exec-quality
+        - make exec-check_keywords
 
-    - env: TESTNAME=acceptance-tests
+    - python: 3.5
+      env: TESTNAME=acceptance-tests
       install:
         - make exec-requirements
       script:
@@ -44,18 +50,32 @@ matrix:
         - make exec-accept
       addons:
           firefox: latest
+    - python: 3.8
+      env: TESTNAME=acceptance-tests
+      install:
+        - make exec-requirements
+      script:
+        - make exec-static
+        - make exec-accept
+      addons:
+        firefox: latest
 
-    - env: TESTNAME=unit-tests
-
-      # Doing so is a waste of time since they won't be used.
+    - python: 3.5
+      env: TOXENV=django22
       install: true
-
+      script:
+        - make exec-requirements
+        - make exec-static
+        - make exec-tests
+    - python: 3.8
+      env: TOXENV=django22
+      install: true
       script:
         - make exec-requirements
         - make exec-static
         - make exec-tests
 
-      after_success:
-        - pip install --upgrade codecov
-        - make exec-coverage
-        - codecov
+after_success:
+    - pip install --upgrade codecov
+    - make exec-coverage
+    - codecov

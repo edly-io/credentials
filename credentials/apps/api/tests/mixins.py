@@ -16,7 +16,7 @@ from credentials.apps.core.tests.factories import UserFactory
 JWT_AUTH = 'JWT_AUTH'
 
 
-class JwtMixin(object):
+class JwtMixin:
     """ Mixin with JWT-related helper functions. """
 
     JWT_SECRET_KEY = getattr(settings, JWT_AUTH)['JWT_SECRET_KEY']
@@ -27,11 +27,11 @@ class JwtMixin(object):
         """Generate a JWT token with the provided payload."""
         secret = secret or self.JWT_SECRET_KEY
         token = jwt.encode(payload, secret)
-        return token
+        return token.decode('utf-8')
 
     def generate_id_token(self, user, admin=False, ttl=1, **overrides):
         """Generate a JWT id_token that looks like the ones currently
-        returned by the edx oidc provider."""
+        returned by the edx oauth provider."""
 
         payload = self.default_payload(user=user, admin=admin, ttl=ttl)
         payload.update(overrides)
@@ -59,7 +59,7 @@ class JwtMixin(object):
         }
 
 
-class CredentialViewSetTestsMixin(object):
+class CredentialViewSetTestsMixin:
     """ Base Class for ProgramCredentialViewSetTests and CourseCredentialViewSetTests. """
 
     list_path = None

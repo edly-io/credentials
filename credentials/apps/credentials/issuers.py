@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 @six.add_metaclass(abc.ABCMeta)
-class AbstractCredentialIssuer(object):
+class AbstractCredentialIssuer:
     """
     Abstract credential issuer.
 
@@ -36,7 +36,12 @@ class AbstractCredentialIssuer(object):
         raise NotImplementedError  # pragma: no cover
 
     @transaction.atomic
-    def issue_credential(self, credential, username, status=UserCredentialStatus.AWARDED, attributes=None):
+    def issue_credential(
+            self, credential, username,
+            status=UserCredentialStatus.AWARDED,
+            attributes=None,
+            request=None
+    ):
         """
         Issue a credential to the user.
 
@@ -48,6 +53,7 @@ class AbstractCredentialIssuer(object):
             username (str): username of user for which credential required
             status (str): status of credential
             attributes (List[dict]): optional list of attributes that should be associated with the issued credential.
+            request (HttpRequest): request object to build program record absolute uris
 
         Returns:
             UserCredential
@@ -93,7 +99,12 @@ class ProgramCertificateIssuer(AbstractCredentialIssuer):
     issued_credential_type = ProgramCertificate
 
     @transaction.atomic
-    def issue_credential(self, credential, username, status=UserCredentialStatus.AWARDED, attributes=None):
+    def issue_credential(
+            self, credential, username,
+            status=UserCredentialStatus.AWARDED,
+            attributes=None,
+            request=None
+    ):
         """
         Issue a Program Certificate to the user.
 
@@ -109,6 +120,7 @@ class ProgramCertificateIssuer(AbstractCredentialIssuer):
             username (str): username of user for which credential required
             status (str): status of credential
             attributes (List[dict]): optional list of attributes that should be associated with the issued credential.
+            request (HttpRequest): request object to build program record absolute uris
 
         Returns:
             UserCredential
@@ -125,8 +137,11 @@ class ProgramCertificateIssuer(AbstractCredentialIssuer):
         # Send an updated email to a pathway org only if the user has previously sent one
         # This function call should be moved into some type of task queue
         # once credentials has that functionality
-        if created:
-            send_updated_emails_for_program(username, credential)
+        site_config = getattr(credential.site, 'siteconfiguration', None)
+        # Add a check to see if records_enabled is True for the site associated with
+        # the credentials. If records is not enabled, we should not send this email
+        if created and site_config and site_config.records_enabled:
+            send_updated_emails_for_program(request, username, credential)
 
         self.set_credential_attributes(user_credential, attributes)
 

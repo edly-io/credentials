@@ -14,10 +14,10 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.template.defaultfilters import slugify
 from django.urls import reverse
+from django.utils.decorators import method_decorator
 from django.utils.translation import ugettext as _
 from django.views.generic import TemplateView, View
 from edx_ace import Recipient, ace
-from ratelimit.mixins import RatelimitMixin
 
 from credentials.apps.catalog.models import CourseRun, Pathway, Program
 from credentials.apps.core.models import User
@@ -28,18 +28,19 @@ from credentials.apps.records.constants import UserCreditPathwayStatus
 from credentials.apps.records.messages import ProgramCreditRequest
 from credentials.apps.records.models import ProgramCertRecord, UserCreditPathway, UserGrade
 from credentials.shared.constants import PathwayType
+from ratelimit.decorators import ratelimit
 
 from .constants import RECORDS_RATE_LIMIT
 
 log = logging.getLogger(__name__)
 
 
-def rate_limited(request, exception):  # pylint: disable=unused-argument
+def rate_limited(request, exception):
     log.warning("Credentials records endpoint is being throttled.")
     return JsonResponse({'error': 'Too Many Requests'}, status=429)
 
 
-class RecordsEnabledMixin(object):
+class RecordsEnabledMixin:
     """ Only allows view if records are enabled for the installation & site.
         Note that the API views are will still be active even if records is disabled.
         You may want to disable records support in the LMS if you want to stop data being sent over.
@@ -375,15 +376,16 @@ class ProgramRecordView(ConditionallyRequireLoginMixin, RecordsEnabledMixin, Tem
         return context
 
 
-class ProgramSendView(LoginRequiredMixin, RatelimitMixin, RecordsEnabledMixin, View):
+@method_decorator(
+    ratelimit(
+        key='user', rate=RECORDS_RATE_LIMIT,
+        method='POST', block=True
+    ), name='dispatch'
+)
+class ProgramSendView(LoginRequiredMixin, RecordsEnabledMixin, View):
     """
     Sends a program via email to a requested partner
     """
-    ratelimit_key = 'user'
-    ratelimit_rate = RECORDS_RATE_LIMIT
-    ratelimit_block = True
-    ratelimit_method = 'POST'
-
     def post(self, request, **kwargs):
         body_unicode = request.body.decode('utf-8')
         body = json.loads(body_unicode)
@@ -418,7 +420,7 @@ class ProgramSendView(LoginRequiredMixin, RatelimitMixin, RecordsEnabledMixin, V
         record_link = request.build_absolute_uri(record_path)
         csv_link = urllib.parse.urljoin(record_link, "csv")
 
-        msg = ProgramCreditRequest(request.site).personalize(
+        msg = ProgramCreditRequest(request.site, user.email).personalize(
             recipient=Recipient(username=None, email_address=pathway.email),
             language=certificate.language,
             user_context={
@@ -443,16 +445,17 @@ class ProgramSendView(LoginRequiredMixin, RatelimitMixin, RecordsEnabledMixin, V
         return http.HttpResponse(status=200)
 
 
-class ProgramRecordCreationView(LoginRequiredMixin, RatelimitMixin, RecordsEnabledMixin, View):
+@method_decorator(
+    ratelimit(
+        key='user', rate=RECORDS_RATE_LIMIT,
+        method='POST', block=True
+    ), name='dispatch'
+)
+class ProgramRecordCreationView(LoginRequiredMixin, RecordsEnabledMixin, View):
     """
     Creates a new Program Certificate Record from given username and program uuid,
     returns the uuid of the created Program Certificate Record
     """
-    ratelimit_key = 'user'
-    ratelimit_rate = RECORDS_RATE_LIMIT
-    ratelimit_block = True
-    ratelimit_method = 'POST'
-
     def post(self, request, **kwargs):
         body_unicode = request.body.decode('utf-8')
         body = json.loads(body_unicode)
@@ -551,7 +554,7 @@ class ProgramRecordCsvView(RecordsEnabledMixin, View):
         writer.writeheader()
         writer.writerows(record['grades'])
         string_io.seek(0)
-        filename = '{username}_{program_name}_grades.csv'.format(
+        filename = '{username}_{program_name}_grades'.format(
             username=record['learner']['username'],
             program_name=record['program']['name']
         )
@@ -564,7 +567,8 @@ class ProgramRecordCsvView(RecordsEnabledMixin, View):
             properties=properties,
             segment_client=segment_client,
         )
-        response['Content-Disposition'] = 'attachment; filename={filename}'.format(
-            filename=filename.replace(' ', '_').lower()
+        filename = filename.replace(' ', '_').lower().encode('utf-8')
+        response['Content-Disposition'] = 'attachment; filename="{filename}.csv"'.format(
+            filename=filename
         )
         return response
