@@ -19,7 +19,7 @@ def add_m2m_data(m2m_relation, data):
 
 
 class OrganizationFactory(factory.DjangoModelFactory):
-    class Meta(object):
+    class Meta:
         model = Organization
 
     site = factory.SubFactory(SiteFactory)
@@ -29,7 +29,7 @@ class OrganizationFactory(factory.DjangoModelFactory):
 
 
 class CourseFactory(factory.DjangoModelFactory):
-    class Meta(object):
+    class Meta:
         model = Course
 
     site = factory.SubFactory(SiteFactory)
@@ -44,19 +44,19 @@ class CourseFactory(factory.DjangoModelFactory):
 
 
 class CourseRunFactory(factory.DjangoModelFactory):
-    class Meta(object):
+    class Meta:
         model = CourseRun
 
     course = factory.SubFactory(CourseFactory)
     uuid = factory.LazyFunction(uuid4)
     key = FuzzyText(prefix='course-run-id/', suffix='/fake')
     title_override = None
-    start = FuzzyDateTime(datetime.datetime(2014, 1, 1, tzinfo=UTC))
-    end = FuzzyDateTime(datetime.datetime(2014, 1, 1, tzinfo=UTC)).end_dt
+    start_date = FuzzyDateTime(datetime.datetime(2014, 1, 1, tzinfo=UTC))
+    end_date = FuzzyDateTime(datetime.datetime(2014, 1, 1, tzinfo=UTC)).end_dt
 
 
 class ProgramFactory(factory.DjangoModelFactory):
-    class Meta(object):
+    class Meta:
         model = Program
 
     site = factory.SubFactory(SiteFactory)
@@ -77,7 +77,7 @@ class ProgramFactory(factory.DjangoModelFactory):
 
 
 class PathwayFactory(factory.DjangoModelFactory):
-    class Meta(object):
+    class Meta:
         model = Pathway
 
     uuid = factory.LazyFunction(uuid4)

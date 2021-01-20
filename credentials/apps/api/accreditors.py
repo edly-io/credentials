@@ -1,4 +1,3 @@
-# pylint:  disable=missing-docstring
 import logging
 
 from credentials.apps.api import exceptions
@@ -8,7 +7,7 @@ from credentials.apps.credentials.issuers import CourseCertificateIssuer, Progra
 logger = logging.getLogger(__name__)
 
 
-class Accreditor(object):
+class Accreditor:
     """ Accreditor class identifies credential type and calls corresponding issuer
     class for generating credential.
     """
@@ -30,7 +29,12 @@ class Accreditor(object):
             else:
                 self.credential_type_issuer_map[credential_type] = issuer
 
-    def issue_credential(self, credential, username, status=UserCredentialStatus.AWARDED, attributes=None):
+    def issue_credential(
+            self, credential, username,
+            status=UserCredentialStatus.AWARDED,
+            attributes=None,
+            request=None
+    ):
         """Issues a credential.
 
         Arguments:
@@ -38,6 +42,7 @@ class Accreditor(object):
             username (str): Username of the recipient.
             status (str): Status of credential.
             attributes (List[dict]): attributes list containing dictionaries of attributes
+            request (HttpRequest): request object to build program record absolute uris
 
         Returns:
             UserCredential
@@ -54,4 +59,4 @@ class Accreditor(object):
                 )
             )
 
-        return credential_issuer.issue_credential(credential, username, status, attributes)
+        return credential_issuer.issue_credential(credential, username, status, attributes, request)

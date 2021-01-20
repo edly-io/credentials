@@ -15,7 +15,7 @@ Including another URLconf
 
 import os
 
-from auth_backends.urls import auth_urlpatterns
+from auth_backends.urls import oauth2_urlpatterns
 from django.conf import settings
 from django.conf.urls import include, url
 from django.conf.urls.static import static
@@ -33,16 +33,18 @@ admin.autodiscover()
 admin.site.site_header = _('Credentials Administration')
 admin.site.site_title = admin.site.site_header
 
-urlpatterns = auth_urlpatterns + [
-    url(r'^admin/', include(admin.site.urls)),
-    url(r'^api/', include('credentials.apps.api.urls', namespace='api')),
-    url(r'^api-auth/', include(auth_urlpatterns, namespace='rest_framework')),
+urlpatterns = oauth2_urlpatterns + [
+    url(r'^admin/', admin.site.urls),
+    url(r'^api/', include(('credentials.apps.api.urls', 'api'), namespace='api')),
+    url(r'^api-auth/', include((oauth2_urlpatterns, 'rest_framework'), namespace='rest_framework')),
     url(r'^api-docs/', get_swagger_view(title='Credentials API'), name='api_docs'),
     url(r'^auto_auth/$', core_views.AutoAuth.as_view(), name='auto_auth'),
-    url(r'^credentials/', include('credentials.apps.credentials.urls', namespace='credentials')),
+    url(r'^credentials/', include(('credentials.apps.credentials.urls', 'credentials'), namespace='credentials')),
     url(r'^health/$', core_views.health, name='health'),
-    url(r'^management/', include('credentials.apps.edx_django_extensions.urls', namespace='management')),
-    url(r'^records/', include('credentials.apps.records.urls', namespace='records')),
+    url(
+        r'^management/', include(('credentials.apps.edx_django_extensions.urls', 'management'), namespace='management')
+    ),
+    url(r'^records/', include(('credentials.apps.records.urls', 'records'), namespace='records')),
     url(r'^program-listing/', ProgramListingView.as_view(), name='program_listing'),
     url(r'^favicon\.ico$', FaviconView.as_view(permanent=True)),
     url(r'^hijack/', include('hijack.urls', namespace='hijack')),
@@ -50,7 +52,7 @@ urlpatterns = auth_urlpatterns + [
 
 # Edly Urls
 urlpatterns += [
-    url(r'^edly-api/', include('credentials.apps.edx_credentials_extensions.edly_credentials_app.urls', namespace='edly_api')),
+    url(r'^edly-api/', include(('credentials.apps.edx_credentials_extensions.edly_credentials_app.urls', 'edly_credentials_app'), namespace='edly_api')),
 ]
 
 handler500 = 'credentials.apps.core.views.render_500'

@@ -1,10 +1,9 @@
 import os
 
-from path import Path as path
+from pathlib import Path as path
 
 from credentials.settings.base import *
 from credentials.settings.utils import get_logger_config
-
 
 INSTALLED_APPS += [
     'credentials.apps.edx_credentials_extensions',
@@ -35,14 +34,15 @@ CACHES = {
 # Local Directories
 TEST_ROOT = path('test_root')
 DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
-MEDIA_ROOT = TEST_ROOT / 'uploads'
+MEDIA_ROOT = str(TEST_ROOT / 'uploads')
 MEDIA_URL = '/static/uploads/'
 
-OAUTH2_PROVIDER_URL = 'https://test-provider/oauth2'
-SOCIAL_AUTH_EDX_OIDC_URL_ROOT = OAUTH2_PROVIDER_URL
+SOCIAL_AUTH_EDX_OAUTH2_URL_ROOT = 'https://test-provider'
+BACKEND_SERVICE_EDX_OAUTH2_PROVIDER_URL = 'https://test-provider/oauth2'
 
 JWT_AUTH.update({
-    'JWT_SECRET_KEY': SOCIAL_AUTH_EDX_OIDC_SECRET,
-    'JWT_ISSUER': OAUTH2_PROVIDER_URL,
-    'JWT_AUDIENCE': SOCIAL_AUTH_EDX_OIDC_KEY,
+    'JWT_SECRET_KEY': SOCIAL_AUTH_EDX_OAUTH2_SECRET,
+    'JWT_ISSUER': 'https://test-provider/oauth2',
+    'JWT_AUDIENCE': SOCIAL_AUTH_EDX_OAUTH2_KEY,
 })
+STATICFILES_STORAGE = None

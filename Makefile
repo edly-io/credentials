@@ -1,7 +1,12 @@
 .DEFAULT_GOAL := tests
 NODE_BIN=./node_modules/.bin
+TOX = ''
 
-.PHONY: requirements
+.PHONY: requirements upgrade piptools production-requirements all-requirements
+
+ifdef TOXENV
+TOX := tox -- #to isolate each tox environment if TOXENV is defined
+endif
 
 # Generates a help message. Borrowed from https://github.com/pydanny/cookiecutter-djangopackage.
 help: ## Display this help message
@@ -12,16 +17,24 @@ clean: ## Remove all generated files
 	coverage erase
 	find . -path '*/__pycache__/*' -delete
 	find . -name \*.pyc -o -name \*.pyo -o -name __pycache__ -delete
-	rm -rf credentials/assets/ credentials/static/bundles/ credentials/static/jsi18n/ coverage htmlcov test_root/uploads
+	rm -rf credentials/assets/ credentials/static/bundles/ credentials/static/jsi18n/ coverage htmlcov test_root/uploads reports
 	git clean -fd credentials/conf/locale
 
-production-requirements: ## Install requirements for production
+production-requirements: piptools ## Install requirements for production
 	npm install --production --no-save
-	pip install -r requirements.txt
+	pip-sync requirements.txt
 
-requirements: ## Install requirements for local development
+js-requirements: ## Install frontend requirements
+	npm install
+
+all-requirements: piptools ## Install local and prod requirements
 	npm install --unsafe-perm ## This flag exists to force node-sass to build correctly on docker. Remove as soon as possible.
-	pip install -r requirements/local.txt
+	npm install --production --no-save
+	pip-sync requirements/all.txt
+
+requirements: piptools ## Install requirements for local development
+	npm install --unsafe-perm ## This flag exists to force node-sass to build correctly on docker. Remove as soon as possible.
+	pip-sync requirements/dev.txt
 
 quality: ## Run linters
 	isort --check-only --recursive acceptance_tests/ credentials/
@@ -36,20 +49,24 @@ test-react: ## Run Jest tests for React
 	npm run test-react
 
 tests: ## Run tests and generate coverage report
-	coverage run -m pytest --ds credentials.settings.test --durations=25
-	coverage report
+	$(TOX)coverage run -m pytest --ds credentials.settings.test --durations=25
+	$(TOX)coverage report
+	$(NODE_BIN)/gulp test
+	make test-react
+
+js-tests: ## Run tests and generate coverage report
 	$(NODE_BIN)/gulp test
 	make test-react
 
 static: ## Gather all static assets for production (minimized)
 	$(NODE_BIN)/webpack --config webpack.config.js --display-error-details --progress --optimize-minimize
-	python manage.py compilejsi18n
-	python manage.py collectstatic --noinput -i *.scss
+	$(TOX)python manage.py compilejsi18n
+	$(TOX)python manage.py collectstatic --noinput -i *.scss
 
 static.dev: ## Gather all static assets for development (not minimized)
 	$(NODE_BIN)/webpack --config webpack.config.js --display-error-details --progress
-	python manage.py compilejsi18n
-	python manage.py collectstatic --noinput -i *.scss
+	$(TOX)python manage.py compilejsi18n
+	$(TOX)python manage.py collectstatic --noinput -i *.scss
 
 static.watch: ## Gather static assets when they change (not minimized)
 	$(NODE_BIN)/webpack --config webpack.config.js --display-error-details --progress --watch
@@ -73,25 +90,28 @@ exec-validate-translations: ## Check translations on a container
 exec-check_translations_up_to_date: ## test translations on a container
 	docker exec -t credentials bash -c 'source /edx/app/credentials/credentials_env && cd /edx/app/credentials/credentials/ && make check_translations_up_to_date'
 
+exec-check_keywords: ## Scan the Django models in all installed apps in this project for restricted field names
+	docker exec -t credentials bash -c 'source /edx/app/credentials/credentials_env && cd /edx/app/credentials/credentials/ && make check_keywords'
+
 exec-clean: ## Remove all generated files from a container
 	docker exec -t credentials bash -c 'source /edx/app/credentials/credentials_env && cd /edx/app/credentials/credentials/ && make clean'
 
 exec-requirements:
-	docker exec -t credentials bash -c 'source /edx/app/credentials/credentials_env && cd /edx/app/credentials/credentials/ && make requirements && make production-requirements'
+	docker exec -t credentials bash -c 'source /edx/app/credentials/credentials_env && cd /edx/app/credentials/credentials/ && make all-requirements'
 
 exec-static: ## Gather static assets on a container
-	docker exec -t credentials bash -c 'source /edx/app/credentials/credentials_env && cd /edx/app/credentials/credentials/ && make static'
+	docker exec -e TOXENV=$(TOXENV) -t credentials bash -c 'source /edx/app/credentials/credentials_env && cd /edx/app/credentials/credentials/ && make static'
 
 exec-quality: ## Run linters on a container
 	docker exec -t credentials bash -c 'source /edx/app/credentials/credentials_env && cd /edx/app/credentials/credentials/ && make quality'
 
 exec-tests: ## Run tests on a container
-	docker exec -it credentials bash -c 'source /edx/app/credentials/credentials_env && cd /edx/app/credentials/credentials/ && xvfb-run make tests'
+	docker exec -e TOXENV=$(TOXENV) -it credentials bash -c 'source /edx/app/credentials/credentials_env && cd /edx/app/credentials/credentials/ && xvfb-run make tests'
 
 exec-accept: ## Run acceptance tests on a container
 	docker exec -it credentials bash -c 'source /edx/app/credentials/credentials_env && cd /edx/app/credentials/credentials/ && make accept'
 
-exec-validate: exec-validate-translations exec-clean exec-static exec-quality exec-tests exec-accept ## Run linters and tests after checking translations and gathering static assets
+exec-validate: exec-validate-translations exec-clean exec-static exec-quality exec-tests exec-accept exec-check_keywords ## Run linters and tests after checking translations and gathering static assets
 
 exec-coverage: ## Generate XML coverage report on a container
 	docker exec -t credentials bash -c 'coverage xml'
@@ -135,3 +155,23 @@ validate_translations: ## Test translations files
 	cd credentials && i18n_tool validate -v --check-all
 
 check_translations_up_to_date: fake_translations detect_changed_source_translations ## Install fake translations and check if translation files are up-to-date
+
+piptools: 
+	pip install -q -r requirements/pip_tools.txt
+
+export CUSTOM_COMPILE_COMMAND = make upgrade
+upgrade: piptools ## update the requirements/*.txt files with the latest packages satisfying requirements/*.in
+	pip-compile --rebuild --upgrade -o requirements/pip_tools.txt requirements/pip_tools.in
+	pip-compile --rebuild --upgrade -o requirements/base.txt requirements/base.in
+	pip-compile --rebuild --upgrade -o requirements/test.txt requirements/test.in
+	pip-compile --rebuild --upgrade -o requirements/docs.txt requirements/docs.in
+	pip-compile --rebuild --upgrade -o requirements/dev.txt requirements/dev.in
+	pip-compile --rebuild --upgrade -o requirements/production.txt requirements/production.in
+	pip-compile --rebuild --upgrade -o requirements/all.txt requirements/all.in
+	# Let tox control the Django version for tests
+	grep -e "^django==" requirements/production.txt > requirements/django.txt
+	sed '/^[dD]jango==/d' requirements/test.txt > requirements/test.tmp
+	mv requirements/test.tmp requirements/test.txt
+
+check_keywords: ## Scan the Django models in all installed apps in this project for restricted field names
+	python manage.py check_reserved_keywords --override_file db_keyword_overrides.yml

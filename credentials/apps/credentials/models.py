@@ -56,10 +56,10 @@ class AbstractCredential(TimeStampedModel):
     """
     Abstract Credentials configuration model.
     """
-    site = models.ForeignKey(Site)
+    site = models.ForeignKey(Site, on_delete=models.CASCADE)
     is_active = models.BooleanField(default=False)
 
-    class Meta(object):
+    class Meta:
         abstract = True
 
 
@@ -81,7 +81,7 @@ class Signatory(TimeStampedModel):
         validators=[validate_image]
     )
 
-    class Meta(object):
+    class Meta:
         verbose_name_plural = 'Signatories'
 
     def __str__(self):
@@ -115,7 +115,7 @@ class AbstractCertificate(AbstractCredential):
         help_text='Custom certificate title to override default display_name for a course/program.'
     )
 
-    class Meta(object):
+    class Meta:
         abstract = True
 
 
@@ -133,7 +133,8 @@ class UserCredential(TimeStampedModel):
     )
 
     credential_content_type = models.ForeignKey(
-        ContentType, limit_choices_to={'model__in': ('coursecertificate', 'programcertificate')}
+        ContentType, limit_choices_to={'model__in': ('coursecertificate', 'programcertificate')},
+        on_delete=models.CASCADE
     )
     credential_id = models.PositiveIntegerField()
     credential = GenericForeignKey('credential_content_type', 'credential_id')
@@ -153,7 +154,7 @@ class UserCredential(TimeStampedModel):
     )
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
 
-    class Meta(object):
+    class Meta:
         unique_together = (('username', 'credential_content_type', 'credential_id'),)
 
     def get_absolute_url(self):
@@ -186,7 +187,7 @@ class CourseCertificate(AbstractCertificate):
         related_query_name='course_credentials'
     )
 
-    class Meta(object):
+    class Meta:
         unique_together = (('course_id', 'certificate_type', 'site'),)
         verbose_name = "Course certificate configuration"
 
@@ -234,13 +235,13 @@ class ProgramCertificate(AbstractCertificate):
     def __str__(self):
         return 'ProgramCertificate: {uuid}'.format(uuid=self.program_uuid)
 
-    class Meta(object):
+    class Meta:
         verbose_name = "Program certificate configuration"
         unique_together = (('site', 'program_uuid'),)
 
     def get_program_api_data(self):
         """ Returns program data from the Catalog API. """
-        return self.site.siteconfiguration.get_program(self.program_uuid)
+        return self.site.siteconfiguration.get_program(self.program_uuid)  # pylint: disable=no-member
 
     # TODO: drop this query in favor of our local copy of
     #       catalog data (and start copying all data we need)
@@ -278,9 +279,9 @@ class UserCredentialAttribute(TimeStampedModel):
     """
     Different attributes of User's Credential such as white list, grade etc.
     """
-    user_credential = models.ForeignKey(UserCredential, related_name='attributes')
+    user_credential = models.ForeignKey(UserCredential, related_name='attributes', on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
     value = models.CharField(max_length=255)
 
-    class Meta(object):
+    class Meta:
         unique_together = (('user_credential', 'name'),)

@@ -99,7 +99,7 @@ class RecordsViewTests(SiteMixin, TestCase):
         """ Verify that the view rejects non-logged-in users. """
         self.client.logout()
         response = self._render_records(status_code=302)
-        self.assertRegex(response.url, '^/login/.*')  # pylint: disable=deprecated-method
+        self.assertRegex(response.url, '^/login/.*')
 
     def test_normal_access(self):
         """ Verify that the view works in default case. """
@@ -325,7 +325,7 @@ class ProgramListingViewTests(SiteMixin, TestCase):
         """ Verify that the view rejects non-logged-in users. """
         self.client.logout()
         response = self._render_listing(status_code=302)
-        self.assertRegexpMatches(response.url, '^/login/.*')  # pylint: disable=deprecated-method
+        self.assertRegex(response.url, '^/login/.*')
 
     def test_only_superuser_access(self):
         """ Verify that the view rejects non-superusers. """
@@ -343,7 +343,7 @@ class ProgramListingViewTests(SiteMixin, TestCase):
         actual_child_templates = response_context_data['child_templates']
         self.assert_matching_template_origin(actual_child_templates['footer'], '_footer.html')
         self.assert_matching_template_origin(actual_child_templates['header'], '_header.html')
-        self.assertFalse('masquerade' in actual_child_templates)  # no masquerading on this view
+        self.assertNotIn('masquerade', actual_child_templates)  # no masquerading on this view
 
     @ddt.data(
         (Program.ACTIVE, True),
@@ -418,7 +418,7 @@ class ProgramRecordViewTests(SiteMixin, TestCase):
         self.pcr = ProgramCertRecordFactory(program=self.program, user=self.user)
 
         self.pathway = PathwayFactory(site=self.site)
-        self.pathway.programs = [self.program]
+        self.pathway.programs.set([self.program])  # pylint: disable=no-member
 
     def _render_program_record(self, record_data=None, status_code=200):
         """ Helper method to mock rendering a user certificate."""
@@ -440,7 +440,7 @@ class ProgramRecordViewTests(SiteMixin, TestCase):
         """ Verify that the private view rejects non-logged-in users. """
         self.client.logout()
         response = self._render_program_record(status_code=302)
-        self.assertRegex(response.url, '^/login/.*')  # pylint: disable=deprecated-method
+        self.assertRegex(response.url, '^/login/.*')
 
     def test_anonymous_access_public(self):
         """ Verify that the public view does not reject non-logged-in users"""
@@ -565,7 +565,7 @@ class ProgramRecordViewTests(SiteMixin, TestCase):
 
     def test_organization_order(self):
         """ Test that the organizations are returned in the order they were added """
-        self.course.owners = self.orgs
+        self.course.owners.set(self.orgs)  # pylint: disable=no-member
         response = self.client.get(reverse('records:private_programs', kwargs={'uuid': self.program.uuid.hex}))
         program_data = json.loads(response.context_data['record'])['program']
         grade = json.loads(response.context_data['record'])['grades'][0]
@@ -576,7 +576,7 @@ class ProgramRecordViewTests(SiteMixin, TestCase):
     def test_course_run_order(self):
         """ Test that the course_runs are returned in the program order """
         new_course_run = CourseRunFactory()
-        self.program.course_runs.add(new_course_run)
+        self.program.course_runs.add(new_course_run)  # pylint: disable=no-member
         UserGradeFactory(username=self.MOCK_USER_DATA['username'],
                          course_run=new_course_run, letter_grade='C',
                          percent_grade=.70)
@@ -596,7 +596,7 @@ class ProgramRecordViewTests(SiteMixin, TestCase):
     def test_course_run_no_credential(self):
         """ Adds a course run with no credential and tests that it does appear in the results """
         new_course_run = CourseRunFactory()
-        self.program.course_runs.add(new_course_run)
+        self.program.course_runs.add(new_course_run)  # pylint: disable=no-member
         UserGradeFactory(username=self.MOCK_USER_DATA['username'],
                          course_run=new_course_run, letter_grade='F',
                          percent_grade=.05)
@@ -621,7 +621,7 @@ class ProgramRecordViewTests(SiteMixin, TestCase):
                               course_run=course_run,
                               letter_grade='F',
                               percent_grade=0.20) for course_run in new_course_runs]
-        self.program.course_runs = new_course_runs
+        self.program.course_runs.set(new_course_runs)  # pylint: disable=no-member
         response = self.client.get(reverse('records:private_programs', kwargs={'uuid': self.program.uuid.hex}))
         grades = json.loads(response.context_data['record'])['grades']
         self.assertEqual(len(grades), 1)
@@ -745,7 +745,7 @@ class ProgramRecordTests(SiteMixin, TestCase):
         json_data = response.json()
 
         self.assertEqual(response.status_code, 201)
-        self.assertRegex(json_data['url'], UUID_PATTERN)  # pylint: disable=deprecated-method
+        self.assertRegex(json_data['url'], UUID_PATTERN)
 
     def test_different_user_creation(self):
         """ Verify that the view rejects a User attempting to create a ProgramCertRecord for another """
@@ -853,7 +853,7 @@ class ProgramSendTests(SiteMixin, TestCase):
         response = self.post()
         self.assertEqual(response.status_code, 200)
         self.assertEqual(mock_ace.send.call_args[0][0].options['from_address'],
-                         'no-reply@' + self.site.domain)  # pylint: disable=no-member
+                         'no-reply@' + self.site.domain)
 
     def test_email_content_complete(self):
         """Verify an email is actually sent"""
@@ -861,7 +861,7 @@ class ProgramSendTests(SiteMixin, TestCase):
         self.assertEqual(response.status_code, 200)
         public_record = ProgramCertRecord.objects.get(user=self.user, program=self.program)
         record_path = reverse('records:public_programs', kwargs={'uuid': public_record.uuid.hex})
-        record_link = "http://" + self.site.domain + record_path  # pylint: disable=no-member
+        record_link = "http://" + self.site.domain + record_path
         csv_link = urllib.parse.urljoin(record_link, "csv")
 
         # Check output and make sure it seems correct
@@ -875,6 +875,7 @@ class ProgramSendTests(SiteMixin, TestCase):
         self.assertIn("<a href=\"" + record_link + "\">View Program Record</a>", message)
         self.assertIn("<a href=\"" + csv_link + "\">Download Record (CSV)</a>", message)
         self.assertEqual(self.site_configuration.partner_from_address, email.from_email)
+        self.assertEqual(self.user.email, email.reply_to[0])
         self.assertListEqual([self.pathway.email], email.to)
 
     def test_email_content_incomplete(self):
@@ -964,6 +965,25 @@ class ProgramRecordCsvViewTests(SiteMixin, TestCase):
         for header in headers:
             self.assertIn(header, csv_headers)
 
+    @patch('credentials.apps.records.views.SegmentClient', autospec=True)
+    def test_filename(self, segment_client):  # pylint: disable=unused-argument
+        """
+        Verify that the filename in response Content-Disposition is utf-8 encoded
+        """
+        filename = '{username}_{program_name}_grades'.format(
+            username=self.user.username,
+            program_name=self.program_cert_record.program.title
+        )
+        filename = filename.replace(' ', '_').lower().encode('utf-8')
+        expected = 'attachment; filename="{filename}.csv"'.format(filename=filename)
+
+        response = self.client.get(
+            reverse('records:program_record_csv', kwargs={'uuid': self.program_cert_record.uuid.hex})
+        )
+        actual = response['Content-Disposition']
+
+        self.assertEqual(actual, expected)
+
 
 @ddt.ddt
 class MasqueradeBannerFactoryTests(SiteMixin, TestCase):
@@ -971,6 +991,7 @@ class MasqueradeBannerFactoryTests(SiteMixin, TestCase):
     MOCK_USER_DATA = {'username': 'test-user', 'name': 'Test User', 'email': 'test@example.org', }
 
     def setUp(self):
+        super().setUp()
         self.user = UserFactory(username=self.MOCK_USER_DATA['username'])
         self.client.login(username=self.user.username, password=USER_PASSWORD)
 
