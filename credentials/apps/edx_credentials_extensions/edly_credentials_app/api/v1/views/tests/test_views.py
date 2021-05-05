@@ -3,14 +3,20 @@ Tests for edly_api Views.
 """
 import json
 
+from django.contrib.sites.models import Site
 from django.urls import reverse
-
+from rest_framework import status
 from rest_framework.test import APITestCase
 
 from credentials.apps.catalog.tests.factories import ProgramFactory
+from credentials.apps.core.models import SiteConfiguration
 from credentials.apps.core.tests.factories import UserFactory
 from credentials.apps.core.tests.mixins import SiteMixin
 from credentials.apps.credentials.tests.factories import ProgramCertificateFactory
+from credentials.apps.edx_credentials_extensions.edly_credentials_app.api.v1.constants import (
+    CLIENT_SITE_SETUP_FIELDS,
+    EDLY_PANEL_WORKER_USER,
+)
 
 JSON_CONTENT_TYPE = 'application/json'
 
@@ -99,3 +105,94 @@ class ProgramCertificateConfigurationTests(SiteMixin, APITestCase):
         actual_data = response.json()
         actual_data = actual_data.get('results')[0]
         assert str(program_certificate_configuration.program_uuid) == actual_data.get('program_uuid')
+
+
+class EdlySiteViewSet(APITestCase):
+    """
+    Unit tests for EdlySiteViewSet viewset.
+    """
+
+    def setUp(self):
+        """
+        Prepare environment for tests.
+        """
+        super(EdlySiteViewSet, self).setUp()
+        self.admin_user = UserFactory(is_staff=True, username=EDLY_PANEL_WORKER_USER)
+        self.edly_sites_url = reverse('edly_api:edly_sites')
+        self.client.force_authenticate(self.admin_user)
+        self.request_data = dict(
+            lms_site='example.lms',
+            credentials_site='example.credentials',
+            wordpress_site='example.wordpress',
+            edly_slug='edx',
+            platform_name='Edly',
+            discovery_site='example.discovery',
+            theme_dir_name='openedx',
+            oauth_clients={
+                'credentials-sso': {
+                    'id': 'credentials-sso-key',
+                    'secret': 'credentials-sso-secret'
+                },
+                'credentials-backend': {
+                    'id': 'credentials-backend-key',
+                    'secret': 'credentials-backend-secret'
+                }
+            },
+        )
+
+    def test_without_authentication(self):
+        """
+        Verify authentication is required when accessing the endpoint.
+        """
+        self.client.logout()
+        response = self.client.post(self.edly_sites_url)
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+    def test_without_permission(self):
+        """
+        Verify panel permission is required when accessing the endpoint.
+        """
+        user = UserFactory()
+        self.client.logout()
+        self.client.force_authenticate(user)
+        response = self.client.post(self.edly_sites_url)
+
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_request_data_validation(self):
+        """
+        Verify validation messages in response for missing required data.
+        """
+        response = self.client.post(self.edly_sites_url, data={})
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert set(response.json().keys()) == set(CLIENT_SITE_SETUP_FIELDS)
+
+    def test_client_setup(self):
+        """
+        Verify successful client setup with correct data.
+        """
+        response = self.client.post(self.edly_sites_url, data=self.request_data, format='json')
+
+        assert response.status_code == status.HTTP_200_OK
+        credentials_site = Site.objects.get(domain=self.request_data.get('credentials_site', ''))
+        assert credentials_site.siteconfiguration
+        assert credentials_site.siteconfiguration.edly_client_branding_and_django_settings
+
+    def test_client_setup_idempotent(self):
+        """
+        Test that the values are only update not created on multiple API calls.
+        """
+        response = self.client.post(self.edly_sites_url, data=self.request_data, format='json')
+
+        assert response.status_code == status.HTTP_200_OK
+        credentials_site = Site.objects.get(domain=self.request_data.get('credentials_site', ''))
+        assert credentials_site.siteconfiguration
+
+        sites_count = Site.objects.all().count()
+        site_configurations_count = SiteConfiguration.objects.all().count()
+        response = self.client.post(self.edly_sites_url, data=self.request_data, format='json')
+
+        assert response.status_code == status.HTTP_200_OK
+        assert Site.objects.all().count() == sites_count
+        assert SiteConfiguration.objects.all().count() == site_configurations_count
