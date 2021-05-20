@@ -37,7 +37,7 @@ def get_credentials_site_configuration(request_data):
         protocol=protocol,
         lms_root_domain=lms_site,
     )
-    oauth2_clients = request_data.get('oauth_clients', {})
+    oauth2_clients = request_data.get('oauth2_clients', {})
     credentials_sso_values = oauth2_clients.get('credentials-sso', {})
     credentials_backend_values = oauth2_clients.get('credentials-backend', {})
 
