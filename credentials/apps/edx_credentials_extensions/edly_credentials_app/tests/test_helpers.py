@@ -26,7 +26,7 @@ class EdlyAppHelperMethodsTests(TestCase):
             platform_name='Edly',
             discovery_site='example.discovery',
             theme_dir_name='openedx',
-            oauth_clients={
+            oauth2_clients={
                 'credentials-sso': {
                     'id': 'credentials-sso-key',
                     'secret': 'credentials-sso-secret'
@@ -61,7 +61,7 @@ class EdlyAppHelperMethodsTests(TestCase):
             protocol=protocol,
             lms_root_domain=lms_site,
         )
-        oauth2_clients = self.request_data.get('oauth_clients', {})
+        oauth2_clients = self.request_data.get('oauth2_clients', {})
         credentials_sso_values = oauth2_clients.get('credentials-sso', {})
         credentials_backend_values = oauth2_clients.get('credentials-backend', {})
         expected_site_configuration = {

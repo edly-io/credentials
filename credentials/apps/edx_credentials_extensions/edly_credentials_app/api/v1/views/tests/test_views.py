@@ -128,7 +128,7 @@ class EdlySiteViewSet(APITestCase):
             platform_name='Edly',
             discovery_site='example.discovery',
             theme_dir_name='openedx',
-            oauth_clients={
+            oauth2_clients={
                 'credentials-sso': {
                     'id': 'credentials-sso-key',
                     'secret': 'credentials-sso-secret'

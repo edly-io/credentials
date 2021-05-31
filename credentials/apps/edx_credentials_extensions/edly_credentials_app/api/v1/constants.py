@@ -16,7 +16,7 @@ CLIENT_SITE_SETUP_FIELDS = [
     'platform_name',
     'discovery_site',
     'theme_dir_name',
-    'oauth_clients'
+    'oauth2_clients'
 ]
 
 EDLY_PANEL_WORKER_USER = 'edly_panel_worker'
