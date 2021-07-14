@@ -1,10 +1,12 @@
 import ddt
 import responses
 import slumber
-from django.core.management import call_command
+from django.core.management import call_command, CommandError
 from django.test import TestCase
 from faker import Faker
+from testfixtures import LogCapture
 
+from credentials.apps.catalog.management.commands.copy_catalog import logger
 from credentials.apps.catalog.models import Course, CourseRun, Organization, Pathway, Program
 from credentials.apps.catalog.tests.factories import OrganizationFactory, ProgramFactory
 from credentials.apps.core.tests.factories import SiteConfigurationFactory
@@ -231,8 +233,16 @@ class CopyCatalogCommandTests(SiteMixin, TestCase):
         self.mock_programs_response({}, 2, 1)
         self.mock_pathways_response(self.wrap_pathways(self.PATHWAYS))
 
-        with self.assertRaises(KeyError):
+        with LogCapture(logger.name) as logs, \
+                self.assertRaises(CommandError):
             self.call_command(page_size=1)
+            logs.check_present(
+                (
+                    logger.name,
+                    'ERROR',
+                    'Failed to copy programs for site: {}.'.format(self.site)
+                )
+            )
 
         self.assertFirstSaved()
 
@@ -246,8 +256,16 @@ class CopyCatalogCommandTests(SiteMixin, TestCase):
         self.mock_pathways_response(self.wrap_pathways(self.PATHWAYS))
         self.mock_programs_response({}, 2, 1, status=500)
 
-        with self.assertRaises(slumber.exceptions.HttpServerError):
+        with LogCapture(logger.name) as logs, \
+                self.assertRaises(CommandError):
             self.call_command(page_size=1)
+            logs.check_present(
+                (
+                    logger.name,
+                    'ERROR',
+                    'Failed to copy programs for site: {}.'.format(self.site)
+                )
+            )
 
         self.assertFirstSaved()
 

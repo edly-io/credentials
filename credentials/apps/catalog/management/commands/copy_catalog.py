@@ -3,7 +3,7 @@
 import logging
 
 from django.contrib.sites.models import Site
-from django.core.management import BaseCommand
+from django.core.management import BaseCommand, CommandError
 
 from credentials.apps.catalog.utils import parse_pathway, parse_program
 from credentials.apps.core.models import SiteConfiguration
@@ -28,8 +28,10 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         page_size = options.get('page_size')
+        failure_count = 0
 
         for site in Site.objects.all():
+            success = True
             site_configs = SiteConfiguration.objects.filter(site=site)
             site_config = site_configs.get() if site_configs.exists() else None
 
@@ -41,10 +43,31 @@ class Command(BaseCommand):
 
             logger.info('Copying catalog data for site {}'.format(site.domain))
             client = site_config.catalog_api_client
-            Command.fetch_programs(site, client, page_size=page_size)
-            logger.info('Finished copying programs.')
-            Command.fetch_pathways(site, client, page_size=page_size)
-            logger.info('Finished copying pathways.')
+            try:
+                Command.fetch_programs(site, client, page_size=page_size)
+                logger.info('Finished copying programs.')
+            except Exception as error:
+                success = False
+                logger.exception('Failed to copy programs for site: {}.'.format(site.domain))
+
+            try:
+                Command.fetch_pathways(site, client, page_size=page_size)
+                logger.info('Finished copying pathways.')
+            except Exception as error:
+                success = False
+                logger.exception('Failed to copy pathways for site: {}.'.format(site.domain))
+
+            if not success:
+                failure_count += 1
+
+        if failure_count:
+            raise CommandError(
+                'Programs / Pathways copying for {failure_for_sites} out of {total_sites} sites have failed. '
+                'Please check the configuration.'.format(
+                    failure_for_sites=failure_count,
+                    total_sites=Site.objects.count(),
+                )
+            )
 
     @staticmethod
     def fetch_programs(site, client, page_size=None):
