@@ -191,6 +191,9 @@ class EdlySiteViewSet(APITestCase):
 
         sites_count = Site.objects.all().count()
         site_configurations_count = SiteConfiguration.objects.all().count()
+        old_domain = self.request_data.get('credentials_site')
+        self.request_data['credentials_site'] = 'new.example.credentials'
+        self.request_data['old_domain_values'] = dict(credentials_site=old_domain)
         response = self.client.post(self.edly_sites_url, data=self.request_data, format='json')
 
         assert response.status_code == status.HTTP_200_OK
