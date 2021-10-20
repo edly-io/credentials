@@ -40,6 +40,7 @@ def get_credentials_site_configuration(request_data):
     oauth2_clients = request_data.get('oauth2_clients', {})
     credentials_sso_values = oauth2_clients.get('credentials-sso', {})
     credentials_backend_values = oauth2_clients.get('credentials-backend', {})
+    language_code = request_data.get('language_code', 'en')
 
     return {
         'DJANGO_SETTINGS_OVERRIDE': {
@@ -56,6 +57,6 @@ def get_credentials_site_configuration(request_data):
             'BACKEND_SERVICE_EDX_OAUTH2_PROVIDER_URL': '{lms_site_with_protocol}/oauth2'.format(
                 lms_site_with_protocol=lms_site_with_protocol
             ),
-            'LANGUAGE_CODE': request_data.get('language_code', 'en'),
+            'LANGUAGE_CODE': language_code,
         }
     }
