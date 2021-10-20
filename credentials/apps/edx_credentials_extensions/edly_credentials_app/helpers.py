@@ -56,5 +56,6 @@ def get_credentials_site_configuration(request_data):
             'BACKEND_SERVICE_EDX_OAUTH2_PROVIDER_URL': '{lms_site_with_protocol}/oauth2'.format(
                 lms_site_with_protocol=lms_site_with_protocol
             ),
+            'LANGUAGE_CODE': request_data.get('language_code', 'en'),
         }
     }
