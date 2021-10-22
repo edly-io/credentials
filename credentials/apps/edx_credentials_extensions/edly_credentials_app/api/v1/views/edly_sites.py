@@ -48,6 +48,7 @@ class EdlySiteViewSet(APIView):
         """
         edly_slug = self.request.data.get('edly_slug', '')
         credentials_base = self.request.data.get('credentials_site', '')
+        old_credentials_base = self.request.data.get('old_domain_values', {}).get('credentials_site', None)
         theme_dir_name = self.request.data.get('theme_dir_name', 'openedx')
         lms_url_root = '{protocol}://{lms_url_root}'.format(
             protocol=self.request.data.get('protocol', 'https'),
@@ -61,7 +62,11 @@ class EdlySiteViewSet(APIView):
             protocol=self.request.data.get('protocol', 'https'),
             wordpress_site=self.request.data.get('wordpress_site', '')
         )
-        credentials_site, __ = Site.objects.update_or_create(domain=credentials_base, defaults=dict(name=credentials_base))
+        credentials_site, __ = Site.objects.update_or_create(
+            domain=old_credentials_base,
+            name=old_credentials_base,
+            defaults={'domain': credentials_base, 'name': credentials_base},
+        )
         credentials_site_config, __ = SiteConfiguration.objects.update_or_create(
             site=credentials_site,
             defaults=dict(
