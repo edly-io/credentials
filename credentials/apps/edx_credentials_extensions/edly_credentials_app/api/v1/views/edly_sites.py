@@ -64,8 +64,7 @@ class EdlySiteViewSet(APIView):
         )
         credentials_site, __ = Site.objects.update_or_create(
             domain=old_credentials_base,
-            name=old_credentials_base,
-            defaults={'domain': credentials_base, 'name': credentials_base},
+            defaults={'domain': credentials_base, 'name': credentials_base[:50]},
         )
         credentials_site_config, __ = SiteConfiguration.objects.update_or_create(
             site=credentials_site,
