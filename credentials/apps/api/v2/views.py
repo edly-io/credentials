@@ -12,10 +12,14 @@ from rest_framework.views import APIView, exception_handler
 
 from credentials.apps.api.v2.filters import UserCredentialFilter
 from credentials.apps.api.v2.permissions import CanReplaceUsername, UserCredentialPermissions
-from credentials.apps.api.v2.serializers import (UserCredentialCreationSerializer, UserCredentialSerializer,
-                                                 UserGradeSerializer)
+from credentials.apps.api.v2.serializers import (
+    UserCredentialCreationSerializer,
+    UserCredentialSerializer,
+    UserGradeSerializer,
+)
 from credentials.apps.credentials.models import UserCredential
 from credentials.apps.records.models import UserGrade
+
 
 log = logging.getLogger(__name__)
 
@@ -33,7 +37,7 @@ def credentials_throttle_handler(exc, context):
         elif isinstance(view, GradeViewSet):
             view = 'GradeViewSet'
 
-        log.warning('Credentials API endpoint {} is being throttled.'.format(view))
+        log.warning(f'Credentials API endpoint {view} is being throttled.')
 
     return response
 
@@ -52,7 +56,7 @@ class CredentialRateThrottle(ScopedRateThrottle):
         if user.is_authenticated and (user.is_staff or user.is_superuser):
             view.throttle_scope = 'staff_override'
 
-        return super(CredentialRateThrottle, self).allow_request(request, view)
+        return super().allow_request(request, view)
 
 
 class CredentialViewSet(viewsets.ModelViewSet):
@@ -84,7 +88,7 @@ class CredentialViewSet(viewsets.ModelViewSet):
             - query
         """
         self.serializer_class = UserCredentialCreationSerializer
-        return super(CredentialViewSet, self).create(request, *args, **kwargs)
+        return super().create(request, *args, **kwargs)
 
     def perform_destroy(self, instance):
         instance.revoke()
@@ -95,14 +99,14 @@ class CredentialViewSet(viewsets.ModelViewSet):
         omit_parameters:
             - query
         """
-        super(CredentialViewSet, self).destroy(request, *args, **kwargs)
+        super().destroy(request, *args, **kwargs)
         instance = self.get_object()
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
     def list(self, request, *args, **kwargs):  # pylint: disable=useless-super-delegation
         """ List all credentials. """
-        return super(CredentialViewSet, self).list(request, *args, **kwargs)
+        return super().list(request, *args, **kwargs)
 
     def partial_update(self, request, *args, **kwargs):  # pylint: disable=useless-super-delegation
         """ Update a credential.
@@ -110,7 +114,7 @@ class CredentialViewSet(viewsets.ModelViewSet):
         omit_parameters:
             - query
         """
-        return super(CredentialViewSet, self).partial_update(request, *args, **kwargs)
+        return super().partial_update(request, *args, **kwargs)
 
     def retrieve(self, request, *args, **kwargs):  # pylint: disable=useless-super-delegation
         """ Retrieve the details of a single credential.
@@ -118,7 +122,7 @@ class CredentialViewSet(viewsets.ModelViewSet):
         omit_parameters:
             - query
         """
-        return super(CredentialViewSet, self).retrieve(request, *args, **kwargs)
+        return super().retrieve(request, *args, **kwargs)
 
     def update(self, request, *args, **kwargs):  # pylint: disable=useless-super-delegation
         """ Update a credential.
@@ -126,7 +130,7 @@ class CredentialViewSet(viewsets.ModelViewSet):
         omit_parameters:
             - query
         """
-        return super(CredentialViewSet, self).update(request, *args, **kwargs)
+        return super().update(request, *args, **kwargs)
 
 
 # A write-only endpoint for now
@@ -141,15 +145,15 @@ class GradeViewSet(mixins.CreateModelMixin,
 
     def create(self, request, *args, **kwargs):  # pylint: disable=useless-super-delegation
         """ Create a new grade. """
-        return super(GradeViewSet, self).create(request, *args, **kwargs)
+        return super().create(request, *args, **kwargs)
 
     def partial_update(self, request, *args, **kwargs):  # pylint: disable=useless-super-delegation
         """ Update a grade. """
-        return super(GradeViewSet, self).partial_update(request, *args, **kwargs)
+        return super().partial_update(request, *args, **kwargs)
 
     def update(self, request, *args, **kwargs):  # pylint: disable=useless-super-delegation
         """ Update a grade. """
-        return super(GradeViewSet, self).update(request, *args, **kwargs)
+        return super().update(request, *args, **kwargs)
 
 
 class UsernameReplacementView(APIView):
@@ -160,7 +164,7 @@ class UsernameReplacementView(APIView):
     called from the LMS endpoint which verifies uniqueness of the username
     first.
 
-    API will recieve a list of current usernames and their new username.
+    API will receive a list of current usernames and their new username.
     """
 
     authentication_classes = (JwtAuthentication, )

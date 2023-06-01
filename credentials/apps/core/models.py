@@ -18,6 +18,11 @@ log = logging.getLogger(__name__)
 
 
 class SiteConfiguration(models.Model):
+    """
+    SiteConfiguration model.
+
+    .. no_pii: This model has no PII.
+    """
     site = models.OneToOneField(Site, null=False, blank=False, on_delete=models.CASCADE)
     edx_org_short_name = models.CharField(
         max_length=255,
@@ -53,8 +58,8 @@ class SiteConfiguration(models.Model):
     )
     partner_from_address = models.EmailField(
         verbose_name='Email address for partners',
-        help_text='An address to use for the "From" field of any automated emails sent out to partners. ' +
-                  'If not defined, no-reply@sitedomain will be used.',
+        help_text='An address to use for the "From" field of any automated emails sent out to partners. '
+                  + 'If not defined, no-reply@sitedomain will be used.',
         blank=True,
         null=True,
     )
@@ -182,11 +187,11 @@ class SiteConfiguration(models.Model):
         Returns:
             str: JWT access token
         """
-        key = 'siteconfiguration_access_token_{}'.format(self.id)
+        key = f'siteconfiguration_access_token_{self.id}'
         access_token = cache.get(key)
 
         if not access_token:
-            url = '{root}/access_token'.format(root=self.oauth2_provider_url)
+            url = f'{self.oauth2_provider_url}/access_token'
             access_token, expiration_datetime = EdxRestApiClient.get_oauth_access_token(
                 url,
                 self.oauth2_client_id,
@@ -233,7 +238,7 @@ class SiteConfiguration(models.Model):
              dict
         """
         program_uuid = str(program_uuid)
-        cache_key = 'programs.api.data.{uuid}'.format(uuid=program_uuid)
+        cache_key = f'programs.api.data.{program_uuid}'
 
         if not ignore_cache:
             program = cache.get(cache_key)
@@ -289,7 +294,18 @@ class SiteConfiguration(models.Model):
 
 
 class User(AbstractUser):
+<<<<<<< HEAD
     """ Custom user model for use with python-social-auth via edx-auth-backends. """
+=======
+    """
+    Custom user model for use with python-social-auth via edx-auth-backends.
+
+    .. pii: Stores email, first name, full name, last name, and username for a user.
+        pii values: email, first_name, full_name, last_name and username
+    .. pii_types: email_address, name, username
+    .. pii_retirement: retained
+    """
+>>>>>>> 5a1cc09e9c934d77e51963e0ce09764c183839a9
     full_name = models.CharField(_('Full Name'), max_length=255, blank=True, null=True)
 
     @property
@@ -310,4 +326,4 @@ class User(AbstractUser):
         return self.username
 
     def get_full_name(self):
-        return self.full_name or super(User, self).get_full_name()
+        return self.full_name or super().get_full_name()

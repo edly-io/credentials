@@ -16,6 +16,7 @@ from credentials.apps.credentials.exceptions import MissingCertificateLogoError
 from credentials.apps.credentials.models import OrganizationDetails, ProgramCertificate, ProgramDetails, UserCredential
 from credentials.apps.credentials.utils import get_credential_visible_date, to_language
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -23,7 +24,7 @@ class SocialMediaMixin:
     """ Mixin with context for sharing certificates to social media networks. """
 
     def get_context_data(self, **kwargs):
-        context = super(SocialMediaMixin, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         request = self.request
         site_configuration = request.site.siteconfiguration
         context.update({
@@ -56,7 +57,7 @@ class RenderCredential(SocialMediaMixin, ThemeViewMixin, TemplateView):
         )
 
     def get_context_data(self, **kwargs):
-        context = super(RenderCredential, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         user_credential = self.user_credential
         organization_names = []
 
@@ -101,6 +102,7 @@ class RenderCredential(SocialMediaMixin, ThemeViewMixin, TemplateView):
 
             # NOTE: In the future this can be set to the course_name
             'program_name': program_details.title,
+            'credential_title': program_details.credential_title,
             'org_name_string': org_name_string,
         })
         if program_details.hours_of_effort:
@@ -114,7 +116,7 @@ class RenderCredential(SocialMediaMixin, ThemeViewMixin, TemplateView):
 
         # NOTE: In the future we will need to account for other types of credentials besides programs.
         template_names += [
-            'credentials/programs/{uuid}/certificate.html'.format(uuid=credential_type.program_uuid),
+            f'credentials/programs/{credential_type.program_uuid}/certificate.html',
             'credentials/programs/{type}/certificate.html'.format(
                 type=slugify(credential_type.program_details.type)),
         ]
@@ -135,12 +137,13 @@ class ExampleCredential(SocialMediaMixin, ThemeViewMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         program_type = self.request.GET.get('program_type', 'Professional Certificate')
-        context = super(ExampleCredential, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         program_details = ProgramDetails(
             uuid=uuid.uuid4(),
             title='Completely Example Program',
             subtitle='Example Subtitle',
             type=program_type,
+            credential_title=None,
             course_count=3,
             organizations=[OrganizationDetails(
                 uuid=uuid.uuid4(),
@@ -186,6 +189,7 @@ class ExampleCredential(SocialMediaMixin, ThemeViewMixin, TemplateView):
             },
             'page_title': program_details.type,
             'program_name': program_details.title,
+            'credential_title': program_details.credential_title,
             'render_language': settings.LANGUAGE_CODE,
             'org_name_string': 'Example University',
         })

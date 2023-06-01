@@ -3,31 +3,19 @@
 # This file doesn't install any packages. It specifies version constraints
 # that will be applied if a package is needed.
 #
-# When pinning something here, please provide an explanation of why.  Ideally,
+# When pinning something here, please provide an explanation of why. Ideally,
 # link to other information that will help people in the future to remove the
 # pin when possible.  Writing an issue against the offending project and
 # linking to it here is good.
 
-# Required to resolve requirements from base.in with inherited files
-requests==2.20.1
-stevedore==1.10.0
-path.py==12.0.2
-
-# Remaining version pins to maintain behavior in
+# code-annotations currently restricts to Django<2.3
 Django<2.3
 
 # Functional pin for dev.in
 docker-compose >= 1.5.1
 
-# Version pins required to retain quality-check behavior
-isort==4.2.5
-
-# django-storages version 1.9 drops support for boto storage backend.
-django-storages<1.9
-
-
-# Not properly supporting latest version of drf-jwt
-drf-jwt<1.15.0
-
 # This package is pinned due to openedx.atlassian.net/browse/ARCHBOM-1078
 social-auth-core<3.3.0
+
+# Later versions of requests have a version of urllib3 that conflicts with botocore. See MICROBA-727
+requests<2.25.0

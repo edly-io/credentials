@@ -15,17 +15,16 @@
 -r base.txt
 
 bok-choy
+code-annotations          # provides commands used by the pii_check make target
 coverage
 ddt
 edx-lint
 factory-boy
 httpretty
 isort
-mock
-pep8
+pycodestyle               # PEP 8 compliance validation
 pytest
 pytest-django
 responses
 testfixtures
 tox
-nose

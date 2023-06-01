@@ -5,10 +5,10 @@ Authentication logic for REST API.
 import logging
 
 import edx_rest_framework_extensions.auth.jwt.authentication as edx_drf_auth
-
 from django.contrib.auth.models import Group
 
 from credentials.apps.core.constants import Role
+
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +45,7 @@ class JwtAuthentication(edx_drf_auth.JwtAuthentication):
         """
         Return the user object with the admin group added or removed if the user is an admin.
         """
-        user = super(JwtAuthentication, self).authenticate_credentials(payload)
+        user = super().authenticate_credentials(payload)
         admin_group = Group.objects.get(name=Role.ADMINS)
         if payload.get('administrator'):
             user.groups.add(admin_group)

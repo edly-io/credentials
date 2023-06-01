@@ -31,7 +31,7 @@ def signatory_assets_path(instance, filename):
     Returns:
         Path to asset.
     """
-    return 'signatories/{id}/{filename}'.format(id=instance.id, filename=filename)
+    return f'signatories/{instance.id}/{filename}'
 
 
 def validate_image(image):
@@ -55,6 +55,8 @@ def validate_course_key(course_key):
 class AbstractCredential(TimeStampedModel):
     """
     Abstract Credentials configuration model.
+
+    .. no_pii: This model has no PII.
     """
     site = models.ForeignKey(Site, on_delete=models.CASCADE)
     is_active = models.BooleanField(default=False)
@@ -66,6 +68,9 @@ class AbstractCredential(TimeStampedModel):
 class Signatory(TimeStampedModel):
     """
     Signatory model to add certificate signatories.
+
+    .. no_pii: This model has no learner PII. The name used here is the name of the professor who signed the
+    certificate.
     """
     name = models.CharField(max_length=255)
     title = models.CharField(max_length=255)
@@ -85,7 +90,7 @@ class Signatory(TimeStampedModel):
         verbose_name_plural = 'Signatories'
 
     def __str__(self):
-        return '{name}, {title}'.format(name=self.name, title=self.title)
+        return f'{self.name}, {self.title}'
 
     def save(self, *args, **kwargs):  # pylint: disable=arguments-differ
         """
@@ -98,16 +103,18 @@ class Signatory(TimeStampedModel):
         if self.pk is None:
             temp_image = self.image
             self.image = None
-            super(Signatory, self).save(*args, **kwargs)
+            super().save(*args, **kwargs)
             self.image = temp_image
 
-        super(Signatory, self).save(force_update=True)
+        super().save(force_update=True)
 
 
 class AbstractCertificate(AbstractCredential):
     """
     Abstract Certificate configuration to support multiple type of certificates
     i.e. Programs, Courses.
+
+    .. no_pii: This model has no PII.
     """
     signatories = models.ManyToManyField(Signatory)
     title = models.CharField(
@@ -122,6 +129,11 @@ class AbstractCertificate(AbstractCredential):
 class UserCredential(TimeStampedModel):
     """
     Credentials issued to a learner.
+
+    .. pii: Stores username for a user.
+        pii values: username
+    .. pii_types: username
+    .. pii_retirement: retained
     """
     AWARDED, REVOKED = (
         'awarded', 'revoked',
@@ -169,6 +181,8 @@ class UserCredential(TimeStampedModel):
 class CourseCertificate(AbstractCertificate):
     """
     Configuration for Course Certificates.
+
+    .. no_pii: This model has no PII.
     """
     course_id = models.CharField(max_length=255, validators=[validate_course_key])
     certificate_type = models.CharField(
@@ -198,13 +212,15 @@ class CourseCertificate(AbstractCertificate):
 
 OrganizationDetails = namedtuple('OrganizationDetails', ('uuid', 'key', 'name', 'display_name',
                                                          'certificate_logo_image_url'))
-ProgramDetails = namedtuple('ProgramDetails', ('uuid', 'title', 'subtitle', 'type', 'course_count',
+ProgramDetails = namedtuple('ProgramDetails', ('uuid', 'title', 'subtitle', 'type', 'credential_title', 'course_count',
                                                'organizations', 'hours_of_effort'))
 
 
 class ProgramCertificate(AbstractCertificate):
     """
     Configuration for Program Certificates.
+
+    .. no_pii: This model has no PII.
     """
 
     program_uuid = models.UUIDField(db_index=True, null=False, blank=False, verbose_name=_('Program UUID'))
@@ -229,11 +245,11 @@ class ProgramCertificate(AbstractCertificate):
     language = models.CharField(
         max_length=8,
         null=True,
-        help_text=u'Locale in which certificates for this program will be rendered'
+        help_text='Locale in which certificates for this program will be rendered'
     )
 
     def __str__(self):
-        return 'ProgramCertificate: {uuid}'.format(uuid=self.program_uuid)
+        return f'ProgramCertificate: {self.program_uuid}'
 
     class Meta:
         verbose_name = "Program certificate configuration"
@@ -269,6 +285,7 @@ class ProgramCertificate(AbstractCertificate):
             title=data['title'],
             subtitle=data['subtitle'],
             type=data['type'],
+            credential_title=self.title,
             course_count=len(data['courses']),
             organizations=organizations,
             hours_of_effort=hours_of_effort
@@ -278,6 +295,8 @@ class ProgramCertificate(AbstractCertificate):
 class UserCredentialAttribute(TimeStampedModel):
     """
     Different attributes of User's Credential such as white list, grade etc.
+
+    .. no_pii: This model has no PII.
     """
     user_credential = models.ForeignKey(UserCredential, related_name='attributes', on_delete=models.CASCADE)
     name = models.CharField(max_length=255)

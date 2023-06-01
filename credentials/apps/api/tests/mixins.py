@@ -13,6 +13,7 @@ from credentials.apps.api.v2.serializers import UserCredentialSerializer
 from credentials.apps.core.constants import Role
 from credentials.apps.core.tests.factories import UserFactory
 
+
 JWT_AUTH = 'JWT_AUTH'
 
 
@@ -66,7 +67,7 @@ class CredentialViewSetTestsMixin:
     user_credential = None
 
     def setUp(self):
-        super(CredentialViewSetTestsMixin, self).setUp()
+        super().setUp()
 
         self.user = UserFactory()
         self.user.groups.add(Group.objects.get(name=Role.ADMINS))

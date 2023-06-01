@@ -1,0 +1,4 @@
+BBBB BBBB
+BBBBBBBBBB BBB
+ gettext(u'Congratulations for finishing your %(program_title)s %(program_type)s Program!') SSSSSSSSSSSSSSS SSS SSSSSSSSS SSSS SSSSSSSSSSSSSSSSS SSSSSSSSSSSSSSSS SSSSSSSS
+BBBBBBBBBBBBB
