@@ -21,12 +21,7 @@ from credentials.apps.records.utils import send_updated_emails_for_program
 logger = logging.getLogger(__name__)
 
 
-<<<<<<< HEAD
-@six.add_metaclass(abc.ABCMeta)
-class AbstractCredentialIssuer:
-=======
 class AbstractCredentialIssuer(metaclass=abc.ABCMeta):
->>>>>>> 5a1cc09e9c934d77e51963e0ce09764c183839a9
     """
     Abstract credential issuer.
 
@@ -152,14 +147,11 @@ class ProgramCertificateIssuer(AbstractCredentialIssuer):
         # the credentials. If records is not enabled, we should not send this email
         if created and site_config and site_config.records_enabled:
             send_updated_emails_for_program(request, username, credential)
-<<<<<<< HEAD
-=======
 
         # If this is a new ProgramCertificate and the `SEND_EMAIL_ON_PROGRAM_COMPLETION`
         # feature is enabled then let's send a congratulatory message to the learner
         if created and getattr(settings, 'SEND_EMAIL_ON_PROGRAM_COMPLETION', False):
             send_program_certificate_created_message(username, credential)
->>>>>>> 5a1cc09e9c934d77e51963e0ce09764c183839a9
 
         self.set_credential_attributes(user_credential, attributes)
 
