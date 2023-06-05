@@ -1,8 +1,0 @@
-BBBB BBBB
-BBBBBBBBBB BBB
-BB BBBBBBBBBBBBBBB
-     gettext(u'%(program_name)s Updated Credit Request for %(user_full_name)s') SSSSSSSSSSSSSSSS SSSSSSS SSSSSS SSSSSSS SSS SSSSSSSSSSSSSSSSSS
-BBBB
-     gettext(u'%(program_name)s Credit Request for %(user_full_name)s') SSSSSSSSSSSSSSSS SSSSSS SSSSSSS SSS SSSSSSSSSSSSSSSSSS
-BBBBB
-BBBBBBBBBBBBB

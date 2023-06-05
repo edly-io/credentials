@@ -53,7 +53,8 @@ urlpatterns = oauth2_urlpatterns + [
 
 # Edly Urls
 urlpatterns += [
-    url(r'^edly_api/', include(('credentials.apps.edx_credentials_extensions.edly_credentials_app.urls', 'edly_credentials_app'), namespace='edly_api')),
+    url(r'^edly_api/', include(('credentials.apps.edx_credentials_extensions.edly_credentials_app.urls',
+                                'edly_credentials_app'), namespace='edly_api')),
 ]
 
 handler500 = 'credentials.apps.core.views.render_500'

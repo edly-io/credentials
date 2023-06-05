@@ -14,6 +14,7 @@ from django.utils.translation import ugettext_lazy as _
 from edx_rest_api_client.client import EdxRestApiClient
 from jsonfield import JSONField
 
+
 log = logging.getLogger(__name__)
 
 
@@ -294,9 +295,6 @@ class SiteConfiguration(models.Model):
 
 
 class User(AbstractUser):
-<<<<<<< HEAD
-    """ Custom user model for use with python-social-auth via edx-auth-backends. """
-=======
     """
     Custom user model for use with python-social-auth via edx-auth-backends.
 
@@ -305,7 +303,6 @@ class User(AbstractUser):
     .. pii_types: email_address, name, username
     .. pii_retirement: retained
     """
->>>>>>> 5a1cc09e9c934d77e51963e0ce09764c183839a9
     full_name = models.CharField(_('Full Name'), max_length=255, blank=True, null=True)
 
     @property

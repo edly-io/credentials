@@ -339,12 +339,6 @@ class ProgramListingViewTests(SiteMixin, TestCase):
         response = self._render_listing(status_code=302)
         self.assertRegex(response.url, '^/login/.*')
 
-    def test_only_superuser_access(self):
-        """ Verify that the view rejects non-superusers. """
-        self.user.is_superuser = False
-        self.user.save()
-        self._render_listing(status_code=404)
-
     def _verify_normal_access(self):
         """ Verify that the view works in default case. """
         response = self._render_listing()
@@ -356,16 +350,6 @@ class ProgramListingViewTests(SiteMixin, TestCase):
         self.assert_matching_template_origin(actual_child_templates['footer'], '_footer.html')
         self.assert_matching_template_origin(actual_child_templates['header'], '_header.html')
         self.assertNotIn('masquerade', actual_child_templates)  # no masquerading on this view
-
-    def assert_matching_template_origin(self, actual, expected_template_name):
-        expected = select_template([expected_template_name])
-        self.assertEqual(actual.origin, expected.origin)
-
-    def test_no_anonymous_access(self):
-        """ Verify that the view rejects non-logged-in users. """
-        self.client.logout()
-        response = self._render_listing(status_code=302)
-        self.assertRegex(response.url, '^/login/.*')
 
     def test_non_superuser_access(self):
         """ Verify that the view rejects non-superuser users. """
@@ -463,7 +447,7 @@ class ProgramRecordViewTests(SiteMixin, TestCase):
         self.pcr = ProgramCertRecordFactory(program=self.program, user=self.user)
 
         self.pathway = PathwayFactory(site=self.site)
-        self.pathway.programs.set([self.program])  # pylint: disable=no-member
+        self.pathway.programs.set([self.program])
 
     def _render_program_record(self, record_data=None, status_code=200):
         """ Helper method to mock rendering a user certificate."""
@@ -610,7 +594,7 @@ class ProgramRecordViewTests(SiteMixin, TestCase):
 
     def test_organization_order(self):
         """ Test that the organizations are returned in the order they were added """
-        self.course.owners.set(self.orgs)  # pylint: disable=no-member
+        self.course.owners.set(self.orgs)
         response = self.client.get(reverse('records:private_programs', kwargs={'uuid': self.program.uuid.hex}))
         program_data = json.loads(response.context_data['record'])['program']
         grade = json.loads(response.context_data['record'])['grades'][0]
@@ -621,7 +605,7 @@ class ProgramRecordViewTests(SiteMixin, TestCase):
     def test_course_run_order(self):
         """ Test that the course_runs are returned in the program order """
         new_course_run = CourseRunFactory()
-        self.program.course_runs.add(new_course_run)  # pylint: disable=no-member
+        self.program.course_runs.add(new_course_run)
         UserGradeFactory(username=self.MOCK_USER_DATA['username'],
                          course_run=new_course_run, letter_grade='C',
                          percent_grade=.70)
@@ -641,7 +625,7 @@ class ProgramRecordViewTests(SiteMixin, TestCase):
     def test_course_run_no_credential(self):
         """ Adds a course run with no credential and tests that it does appear in the results """
         new_course_run = CourseRunFactory()
-        self.program.course_runs.add(new_course_run)  # pylint: disable=no-member
+        self.program.course_runs.add(new_course_run)
         UserGradeFactory(username=self.MOCK_USER_DATA['username'],
                          course_run=new_course_run, letter_grade='F',
                          percent_grade=.05)
@@ -666,7 +650,7 @@ class ProgramRecordViewTests(SiteMixin, TestCase):
                               course_run=course_run,
                               letter_grade='F',
                               percent_grade=0.20) for course_run in new_course_runs]
-        self.program.course_runs.set(new_course_runs)  # pylint: disable=no-member
+        self.program.course_runs.set(new_course_runs)
         response = self.client.get(reverse('records:private_programs', kwargs={'uuid': self.program.uuid.hex}))
         grades = json.loads(response.context_data['record'])['grades']
         self.assertEqual(len(grades), 1)

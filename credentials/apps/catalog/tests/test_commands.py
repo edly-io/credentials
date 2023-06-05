@@ -1,7 +1,6 @@
 import ddt
 import responses
-import slumber
-from django.core.management import call_command, CommandError
+from django.core.management import CommandError, call_command
 from django.test import TestCase
 from faker import Faker
 from testfixtures import LogCapture

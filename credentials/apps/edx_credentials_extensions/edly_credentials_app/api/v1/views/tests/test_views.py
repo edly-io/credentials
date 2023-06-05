@@ -18,6 +18,7 @@ from credentials.apps.edx_credentials_extensions.edly_credentials_app.api.v1.con
     EDLY_PANEL_WORKER_USER,
 )
 
+
 JSON_CONTENT_TYPE = 'application/json'
 
 

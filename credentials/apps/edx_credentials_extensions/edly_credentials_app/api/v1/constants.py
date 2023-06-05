@@ -3,6 +3,7 @@ Constants for Edly Credentials API.
 """
 from django.utils.translation import ugettext as _
 
+
 ERROR_MESSAGES = {
     'CLIENT_SITES_SETUP_SUCCESS': _('Client sites setup successful.'),
     'CLIENT_SITES_SETUP_FAILURE': _('Client sites setup failed.'),

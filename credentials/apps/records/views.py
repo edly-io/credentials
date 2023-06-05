@@ -29,7 +29,6 @@ from credentials.apps.records.constants import UserCreditPathwayStatus
 from credentials.apps.records.messages import ProgramCreditRequest
 from credentials.apps.records.models import ProgramCertRecord, UserCreditPathway, UserGrade
 from credentials.shared.constants import PathwayType
-from ratelimit.decorators import ratelimit
 
 from .constants import RECORDS_RATE_LIMIT
 

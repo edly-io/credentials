@@ -5,8 +5,11 @@ from django.test import TestCase
 
 from credentials.apps.catalog.tests.factories import ProgramFactory
 from credentials.apps.core.tests.mixins import SiteMixin
-from credentials.apps.credentials.tests.factories import SignatoryFactory, ProgramCertificateFactory
-from credentials.apps.edx_credentials_extensions.edly_credentials_app.api.serializers import SignatorySerializer, ProgramCertificateConfigurationSerializer
+from credentials.apps.credentials.tests.factories import ProgramCertificateFactory, SignatoryFactory
+from credentials.apps.edx_credentials_extensions.edly_credentials_app.api.serializers import (
+    ProgramCertificateConfigurationSerializer,
+    SignatorySerializer,
+)
 
 
 class SignatorySerializerTest(SiteMixin, TestCase):

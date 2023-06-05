@@ -6,6 +6,7 @@ from django.contrib.sites.shortcuts import get_current_site
 
 from credentials.apps.core.models import SiteConfiguration
 
+
 LOGGER = logging.getLogger(__name__)
 
 

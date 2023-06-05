@@ -151,6 +151,8 @@ wrapt==1.11.2             # via -r requirements/dev.txt, astroid
 xss-utils==0.1.3          # via -r requirements/dev.txt, -r requirements/production.txt
 zope.event==4.5.0         # via -r requirements/production.txt, gevent
 zope.interface==5.2.0     # via -r requirements/production.txt, gevent
+importlib-metadata==1.6.0  # via -r requirements/dev.txt, -r requirements/production.txt, importlib-resources, jsonschema, markdown, path.py, pluggy, pytest, tox, virtualenv
+zipp==1.2.0               # via -r requirements/dev.txt, -r requirements/production.txt, importlib-metadata, importlib-resources
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools

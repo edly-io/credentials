@@ -1,17 +1,19 @@
 """
 Unit tests for edly credentials app middlewares.
 """
-from testfixtures import LogCapture
 from django.conf import settings
 from django.contrib import auth
-from django.test.client import Client
 from django.test import RequestFactory, TestCase
+from django.test.client import Client
 from django.urls import reverse
+from testfixtures import LogCapture
 
 from credentials.apps.core.models import SiteConfiguration
-from credentials.apps.core.tests.factories import UserFactory, SiteFactory
+from credentials.apps.core.tests.factories import SiteFactory, UserFactory
 from credentials.apps.edx_credentials_extensions.edly_credentials_app.middleware import logger
-from credentials.apps.edx_credentials_extensions.edly_credentials_app.tests.factories import EdlySiteConfigurationFactory
+from credentials.apps.edx_credentials_extensions.edly_credentials_app.tests.factories import (
+    EdlySiteConfigurationFactory,
+)
 
 
 class SettingsOverrideMiddlewareTests(TestCase):

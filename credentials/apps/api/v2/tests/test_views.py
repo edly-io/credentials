@@ -3,7 +3,6 @@ from decimal import Decimal
 from unittest import mock
 
 import ddt
-import mock
 from django.contrib.auth.models import Permission
 from django.test import TestCase
 from django.urls import reverse

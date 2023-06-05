@@ -2,7 +2,6 @@
 Serializers for edly_api.
 """
 from django.contrib.sites.models import Site
-
 from rest_framework import serializers
 
 from credentials.apps.credentials.models import ProgramCertificate, Signatory

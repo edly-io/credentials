@@ -26,6 +26,7 @@ class EdlyAppHelperMethodsTests(TestCase):
             platform_name='Edly',
             discovery_site='example.discovery',
             theme_dir_name='openedx',
+            language_code='en',
             oauth2_clients={
                 'credentials-sso': {
                     'id': 'credentials-sso-key',
@@ -64,6 +65,7 @@ class EdlyAppHelperMethodsTests(TestCase):
         oauth2_clients = self.request_data.get('oauth2_clients', {})
         credentials_sso_values = oauth2_clients.get('credentials-sso', {})
         credentials_backend_values = oauth2_clients.get('credentials-backend', {})
+        language_code = self.request_data.get("language_data", 'en')
         expected_site_configuration = {
             'DJANGO_SETTINGS_OVERRIDE': {
                 'SOCIAL_AUTH_EDX_OAUTH2_KEY': credentials_sso_values.get('id', ''),
@@ -79,6 +81,7 @@ class EdlyAppHelperMethodsTests(TestCase):
                 'BACKEND_SERVICE_EDX_OAUTH2_PROVIDER_URL': '{lms_site_with_protocol}/oauth2'.format(
                     lms_site_with_protocol=lms_site_with_protocol
                 ),
+                'LANGUAGE_CODE': language_code,
             }
         }
 

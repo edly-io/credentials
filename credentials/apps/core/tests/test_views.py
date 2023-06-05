@@ -28,9 +28,9 @@ class HealthTests(TestCase):
         """Test that the endpoint reports when all services are healthy."""
         self._assert_health(200, Status.OK, Status.OK)
 
-    @mock.patch('django.contrib.sites.middleware.get_current_site', mock.Mock(return_value=None))
+    @mock.patch('django.contrib.sites.shortcuts.get_current_site')
     @mock.patch('django.db.backends.base.base.BaseDatabaseWrapper.cursor', mock.Mock(side_effect=DatabaseError))
-    def test_database_outage(self):
+    def test_database_outage(self, mock_current_site):
         """Test that the endpoint reports when the database is unavailable."""
         self._assert_health(503, Status.UNAVAILABLE, Status.UNAVAILABLE)
 

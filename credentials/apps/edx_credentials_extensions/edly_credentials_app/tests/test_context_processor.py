@@ -1,12 +1,14 @@
 """
 Unit tests for edly credentials app context_processor
 """
-from django.test.client import Client
 from django.test import RequestFactory, TestCase
+from django.test.client import Client
 
 from credentials.apps.core.tests.factories import SiteFactory
 from credentials.apps.edx_credentials_extensions.edly_credentials_app.context_processor import edly_app_context
-from credentials.apps.edx_credentials_extensions.edly_credentials_app.tests.factories import EdlySiteConfigurationFactory
+from credentials.apps.edx_credentials_extensions.edly_credentials_app.tests.factories import (
+    EdlySiteConfigurationFactory,
+)
 
 
 class EdlyAppContextProcessorTests(TestCase):
@@ -35,7 +37,6 @@ class EdlyAppContextProcessorTests(TestCase):
         }
         actual_context_values = edly_app_context(self.request)
         assert expected_context_values == actual_context_values
-
 
     def test_custom_edly_app_context(self):
         """

@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from credentials.apps.credentials.models import ProgramCertificate
 from credentials.apps.edx_credentials_extensions.edly_credentials_app.api.permissions import CanAccessCurrentSite
 from credentials.apps.edx_credentials_extensions.edly_credentials_app.api.serializers import (
-    ProgramCertificateConfigurationSerializer
+    ProgramCertificateConfigurationSerializer,
 )
 
 

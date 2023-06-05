@@ -4,22 +4,22 @@ Tests for Edly Utils Functions.
 from unittest import TestCase
 
 import jwt
-import mock
 import pytest
 from django.conf import settings
 from django.test.client import RequestFactory
-from mock import MagicMock
 
 from credentials.apps.core.tests.factories import SiteFactory, UserFactory
 from credentials.apps.edx_credentials_extensions.edly_credentials_app.tests.factories import (
     EdlySiteConfigurationFactory,
 )
 from credentials.apps.edx_credentials_extensions.edly_credentials_app.utils import (
-    encode_edly_user_info_cookie,
     decode_edly_user_info_cookie,
+    encode_edly_user_info_cookie,
     get_edx_org_from_cookie,
     user_has_edx_organization_access,
 )
+from unittest import mock
+from unittest.mock import MagicMock
 
 
 @pytest.mark.django_db

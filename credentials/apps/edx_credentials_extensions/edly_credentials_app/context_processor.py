@@ -1,5 +1,6 @@
 from math import floor
 
+
 DEFAULT_SERVICES_NOTIFICATIONS_COOKIE_EXPIRY = 180  # value in seconds
 DEFAULT_THEME_BRANDING_DICT = {
     'logo': "https://edly-edx-theme-files.s3.amazonaws.com/st-lutherx-logo.png",
