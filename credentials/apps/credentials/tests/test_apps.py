@@ -3,6 +3,7 @@ from django.conf import settings
 from django.test import TestCase
 from testfixtures import LogCapture
 
+
 LOGGER_NAME = 'credentials.apps.credentials.apps'
 
 
@@ -12,7 +13,7 @@ class CredentialsConfigTests(TestCase):
         """
         app_config = AppConfig.create('credentials.apps.credentials')
         setting_attribute = 'CREDENTIALS_SERVICE_USER'
-        expected_error_msg = "The settings {} must be set in order to start the application!".format(setting_attribute)
+        expected_error_msg = f"The settings {setting_attribute} must be set in order to start the application!"
 
         delattr(settings, setting_attribute)
 

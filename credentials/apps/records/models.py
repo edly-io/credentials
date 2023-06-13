@@ -18,6 +18,11 @@ from credentials.shared.constants import PathwayType
 class UserGrade(TimeStampedModel):
     """
     A grade for a specific user and course run
+
+    .. pii: Stores username for a user.
+        pii values: username
+    .. pii_types: username
+    .. pii_retirement: retained
     """
     username = models.CharField(max_length=150, blank=False)
     course_run = models.ForeignKey(CourseRun, on_delete=models.CASCADE)
@@ -32,6 +37,8 @@ class UserGrade(TimeStampedModel):
 class ProgramCertRecord(TimeStampedModel):
     """
     Connects a User with a Program
+
+    .. no_pii: This model has no PII.
     """
     certificate = models.ForeignKey(
         ProgramCertificate,
@@ -45,7 +52,7 @@ class ProgramCertRecord(TimeStampedModel):
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
 
     def __str__(self):
-        return 'ProgramCertificateRecord: {uuid}'.format(uuid=self.uuid)
+        return f'ProgramCertificateRecord: {self.uuid}'
 
     class Meta:
         verbose_name = "Shared program record"
@@ -57,6 +64,8 @@ class UserCreditPathway(TimeStampedModel):
     Connects a user to a credit pathway
     This is used to track when a user sends a record to that organization
     The timestamp is used for error tracking and support
+
+    .. no_pii: This model has no PII.
     """
     STATUS_CHOICES = [
         (constants.UserCreditPathwayStatus.SENT, _('sent')),
@@ -79,7 +88,7 @@ class UserCreditPathway(TimeStampedModel):
 
     def save(self, *args, **kwargs):  # pylint: disable=arguments-differ
         self.full_clean()
-        return super(UserCreditPathway, self).save(*args, **kwargs)
+        return super().save(*args, **kwargs)
 
     class Meta:
         unique_together = ('user', 'pathway')

@@ -8,7 +8,11 @@ from django.test import TestCase
 from credentials.apps.catalog.models import Course, CourseRun, Organization, Program
 from credentials.apps.catalog.tests.factories import CourseFactory
 from credentials.apps.catalog.utils import (
-    parse_course, parse_course_run, parse_organization, parse_pathway, parse_program
+    parse_course,
+    parse_course_run,
+    parse_organization,
+    parse_pathway,
+    parse_program,
 )
 from credentials.apps.core.tests.factories import SiteFactory
 from credentials.shared.constants import PathwayType
@@ -33,16 +37,16 @@ class ParseTests(TestCase):
 
     PROGRAM1_DATA = {'uuid': '33f0dded-fee9-4dec-a333-b9d8c2c82bd5', 'title': 'Program Title',
                      'authoring_organizations': [ORG1_DATA], 'courses': [COURSE1_DATA], 'type': 'MicroMasters',
-                     'status': 'active'}
+                     'status': 'active', 'type_attrs': {'slug': 'micromasters'}}
     PROGRAM1_VALUES = {'uuid': '33f0dded-fee9-4dec-a333-b9d8c2c82bd5', 'title': 'Program Title',
-                       'type': 'MicroMasters', 'status': 'active'}
+                       'type': 'MicroMasters', 'status': 'active', 'type_slug': 'micromasters'}
 
     PATHWAY1_DATA = {'uuid': 'b13739e3-a966-4591-930e-a338e6083c63', 'name': 'Test Pathway', 'org_name': 'Pathway Org',
                      'email': 'test@example.com', 'programs': [PROGRAM1_DATA],
                      'pathway_type': PathwayType.INDUSTRY.value}  # Check type is industry since type defaults to credit
 
     def setUp(self):
-        super(ParseTests, self).setUp()
+        super().setUp()
         self.site = SiteFactory()
 
     @ddt.unpack

@@ -1,9 +1,9 @@
 """Test models for credentials service app."""
 
 import uuid
+from unittest import mock
 
 import ddt
-import mock
 from django.core.exceptions import ValidationError
 from django.core.files.images import ImageFile
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -14,13 +14,19 @@ from credentials.apps.core.models import SiteConfiguration
 from credentials.apps.core.tests.mixins import SiteMixin
 from credentials.apps.credentials import constants
 from credentials.apps.credentials.models import (
-    CourseCertificate, OrganizationDetails, ProgramDetails, Signatory,
-    UserCredential
+    CourseCertificate,
+    OrganizationDetails,
+    ProgramDetails,
+    Signatory,
+    UserCredential,
 )
 from credentials.apps.credentials.tests.factories import (
-    ProgramCertificateFactory, SignatoryFactory, UserCredentialFactory
+    ProgramCertificateFactory,
+    SignatoryFactory,
+    UserCredentialFactory,
 )
 from credentials.settings.base import MEDIA_ROOT
+
 
 TEST_DATA_ROOT = MEDIA_ROOT + '/test/data/'
 
@@ -75,7 +81,7 @@ class CourseCertificateTests(SiteMixin, TestCase):
     """Test Course Certificate model."""
 
     def setUp(self):
-        super(CourseCertificateTests, self).setUp()
+        super().setUp()
         self.course_key = CourseLocator(org='test', course='test', run='test')
 
     def test_invalid_course_key(self):
@@ -97,10 +103,17 @@ class ProgramCertificateTests(SiteMixin, TestCase):
         instance = ProgramCertificateFactory()
         self.assertEqual(str(instance), 'ProgramCertificate: ' + str(instance.program_uuid))
 
-    @ddt.data(True, False)
-    def test_program_details(self, use_org_name):
+    @ddt.data(
+        (True, None),
+        (True, 'Test custom credential title'),
+        (False, None),
+        (False, 'Other very special credential title'),
+    )
+    @ddt.unpack
+    def test_program_details(self, use_org_name, credential_title):
         """ Verify the method returns the details of program associated with the ProgramCertificate. """
-        program_certificate = ProgramCertificateFactory(site=self.site, use_org_name=use_org_name)
+        program_certificate = ProgramCertificateFactory(site=self.site, use_org_name=use_org_name,
+                                                        title=credential_title)
         program_uuid = program_certificate.program_uuid.hex
         courses = [
             {'key': 'ACMEx/101x'},
@@ -111,6 +124,7 @@ class ProgramCertificateTests(SiteMixin, TestCase):
             title='Test Program',
             subtitle='Test Subtitle',
             type='MicroFakers',
+            credential_title=credential_title,
             course_count=len(courses),
             organizations=[
                 OrganizationDetails(

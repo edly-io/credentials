@@ -4,15 +4,20 @@ import logging
 from django.contrib.sites.models import Site
 from django.db import models
 from django_extensions.db.models import TimeStampedModel
-
 from sortedm2m.fields import SortedManyToManyField
+
 from credentials.shared.constants import PathwayType
+
 
 logger = logging.getLogger(__name__)
 
 
 class Organization(TimeStampedModel):
-    """ Organization model. """
+    """
+    Organization model.
+
+    .. no_pii: This model has no PII.
+    """
     site = models.ForeignKey(Site, on_delete=models.CASCADE)
     uuid = models.UUIDField(blank=False, null=False, verbose_name='UUID')
     key = models.CharField(max_length=255)
@@ -28,7 +33,11 @@ class Organization(TimeStampedModel):
 
 
 class Course(TimeStampedModel):
-    """ Course model. """
+    """
+    Course model.
+
+    .. no_pii: This model has no PII.
+    """
     site = models.ForeignKey(Site, on_delete=models.CASCADE)
     uuid = models.UUIDField(verbose_name='UUID')
     key = models.CharField(max_length=255)
@@ -41,11 +50,15 @@ class Course(TimeStampedModel):
         )
 
     def __str__(self):
-        return '{key}: {title}'.format(key=self.key, title=self.title)
+        return f'{self.key}: {self.title}'
 
 
 class CourseRun(TimeStampedModel):
-    """ CourseRun model. """
+    """
+    CourseRun model.
+
+    .. no_pii: This model has no PII.
+    """
     course = models.ForeignKey(Course, related_name='course_runs', on_delete=models.CASCADE)
     uuid = models.UUIDField(verbose_name='UUID')
     key = models.CharField(max_length=255)
@@ -65,7 +78,7 @@ class CourseRun(TimeStampedModel):
         )
 
     def __str__(self):
-        return '{key}: {title}'.format(key=self.key, title=self.title)
+        return f'{self.key}: {self.title}'
 
     @property
     def title(self):
@@ -73,6 +86,11 @@ class CourseRun(TimeStampedModel):
 
 
 class Program(TimeStampedModel):
+    """
+    Program model.
+
+    .. no_pii: This model has no PII.
+    """
     site = models.ForeignKey(Site, on_delete=models.CASCADE)
     uuid = models.UUIDField(verbose_name='UUID')
     title = models.CharField(max_length=255)
@@ -80,6 +98,7 @@ class Program(TimeStampedModel):
     course_runs = SortedManyToManyField(CourseRun, related_name='programs')
     authoring_organizations = SortedManyToManyField(Organization, blank=True, related_name='authored_programs')
     type = models.CharField(max_length=32, blank=False, default='')
+    type_slug = models.CharField(max_length=32, blank=False, default='')
 
     ACTIVE = 'active'
     RETIRED = 'retired'
@@ -102,6 +121,9 @@ class Pathway(TimeStampedModel):
 
     Pathways can be credit pathways that represent channels where learners can
     send their records for credit, or professional pathways.
+
+    .. no_pii: This model has no learner PII. The email address used here is the email address associated with the
+    pathway itself (such as 'registrar@school.edu'), not with a learner.
     """
     pathway_type = models.CharField(
         max_length=32,
