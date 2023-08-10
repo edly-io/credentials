@@ -1,4 +1,5 @@
-import mock
+from unittest import mock
+
 from django.test import TestCase
 
 from credentials.apps.credentials.templatetags.html import month

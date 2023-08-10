@@ -7,6 +7,7 @@ import io
 import json
 import urllib.parse
 import uuid
+from unittest.mock import patch
 
 import ddt
 from django.contrib.contenttypes.models import ContentType
@@ -16,21 +17,32 @@ from django.template.loader import select_template
 from django.test import TestCase
 from django.test.utils import override_settings
 from django.urls import reverse
-from mock import patch
 
 from credentials.apps.catalog.models import Program
-from credentials.apps.catalog.tests.factories import (CourseFactory, CourseRunFactory, OrganizationFactory,
-                                                      PathwayFactory, ProgramFactory)
+from credentials.apps.catalog.tests.factories import (
+    CourseFactory,
+    CourseRunFactory,
+    OrganizationFactory,
+    PathwayFactory,
+    ProgramFactory,
+)
 from credentials.apps.core.tests.factories import USER_PASSWORD, UserFactory
 from credentials.apps.core.tests.mixins import SiteMixin
 from credentials.apps.credentials.constants import UUID_PATTERN
 from credentials.apps.credentials.models import UserCredential
-from credentials.apps.credentials.tests.factories import (CourseCertificateFactory, ProgramCertificateFactory,
-                                                          UserCredentialAttributeFactory, UserCredentialFactory)
+from credentials.apps.credentials.tests.factories import (
+    CourseCertificateFactory,
+    ProgramCertificateFactory,
+    UserCredentialAttributeFactory,
+    UserCredentialFactory,
+)
 from credentials.apps.records.constants import UserCreditPathwayStatus
 from credentials.apps.records.models import ProgramCertRecord, UserCreditPathway
-from credentials.apps.records.tests.factories import (ProgramCertRecordFactory, UserCreditPathwayFactory,
-                                                      UserGradeFactory)
+from credentials.apps.records.tests.factories import (
+    ProgramCertRecordFactory,
+    UserCreditPathwayFactory,
+    UserGradeFactory,
+)
 from credentials.apps.records.tests.utils import dump_random_state
 from credentials.shared.constants import PathwayType
 
@@ -124,11 +136,11 @@ class RecordsViewTests(SiteMixin, TestCase):
         ])
 
         # Test that the data is parsed from an escaped string
-        self.assertContains(response, 'JSON.parse(\'[{' +
-                                      '\\u0022name\\u0022: \\u0022\\u003Cxss\\u003E\\u0022, ' +
-                                      '\\u0022partner\\u0022: \\u0022XSS\\u0022, ' +
-                                      '\\u0022uuid\\u0022: \\u0022uuid\\u0022' +
-                                      '}]\')')
+        self.assertContains(response, 'JSON.parse(\'[{'
+                            + '\\u0022name\\u0022: \\u0022\\u003Cxss\\u003E\\u0022, '
+                            + '\\u0022partner\\u0022: \\u0022XSS\\u0022, '
+                            + '\\u0022uuid\\u0022: \\u0022uuid\\u0022'
+                            + '}]\')')
         self.assertNotContains(response, '<xss>')
 
     def test_help_url(self):
@@ -167,7 +179,7 @@ class RecordsViewTests(SiteMixin, TestCase):
         self.assertEqual(program_data, expected_program_data if visible else [])
 
     def test_in_progress_from_db(self):
-        """ Verify that no program cert, but course certs reuslts in an In Progress program """
+        """ Verify that no program cert, but course certs results in an In Progress program """
         # Delete the program
         self.program_cert.delete()
         response = self.client.get(reverse('records:index'))
@@ -255,7 +267,7 @@ class ProgramListingViewTests(SiteMixin, TestCase):
         super().setUp()
         dump_random_state()
 
-        self.user = UserFactory(username=self.MOCK_USER_DATA['username'], is_superuser=True)
+        self.user = UserFactory(username=self.MOCK_USER_DATA['username'], is_staff=True)
         self.orgs = [OrganizationFactory.create(name=name, site=self.site) for name in ['TestOrg1', 'TestOrg2']]
         self.course = CourseFactory.create(site=self.site)
         self.course_runs = CourseRunFactory.create_batch(2, course=self.course)
@@ -317,6 +329,17 @@ class ProgramListingViewTests(SiteMixin, TestCase):
 
         return data
 
+    def _verify_normal_access(self):
+        response = self._render_listing()
+        response_context_data = response.context_data
+
+        self.assertContains(response, 'Program Listing View')
+
+        actual_child_templates = response_context_data['child_templates']
+        self.assert_matching_template_origin(actual_child_templates['footer'], '_footer.html')
+        self.assert_matching_template_origin(actual_child_templates['header'], '_header.html')
+        self.assertNotIn('masquerade', actual_child_templates)  # no masquerading on this view
+
     def assert_matching_template_origin(self, actual, expected_template_name):
         expected = select_template([expected_template_name])
         self.assertEqual(actual.origin, expected.origin)
@@ -327,23 +350,28 @@ class ProgramListingViewTests(SiteMixin, TestCase):
         response = self._render_listing(status_code=302)
         self.assertRegex(response.url, '^/login/.*')
 
-    def test_only_superuser_access(self):
-        """ Verify that the view rejects non-superusers. """
+    def test_non_superuser_access(self):
+        """ Verify that the view rejects non-superuser users. """
         self.user.is_superuser = False
+        self.user.is_staff = False
         self.user.save()
         self._render_listing(status_code=404)
 
-    def test_normal_access(self):
-        """ Verify that the view works in default case. """
-        response = self._render_listing()
-        response_context_data = response.context_data
+    def test_only_staff_access(self):
+        """ Verify that the view rejects non-staff users. """
+        self.user.is_staff = False
+        self.user.save()
+        self._render_listing(status_code=404)
 
-        self.assertContains(response, 'Program Listing View')
+    def test_normal_access_superuser(self):
+        """ Verify that the view works with only superuser, no staff. """
+        self.user.is_superuser = True
+        self.user.is_staff = False
+        self._verify_normal_access()
 
-        actual_child_templates = response_context_data['child_templates']
-        self.assert_matching_template_origin(actual_child_templates['footer'], '_footer.html')
-        self.assert_matching_template_origin(actual_child_templates['header'], '_header.html')
-        self.assertNotIn('masquerade', actual_child_templates)  # no masquerading on this view
+    def test_normal_access_as_staff(self):
+        """ Verify that the view works in default case. Staff is set in the setup method."""
+        self._verify_normal_access()
 
     @ddt.data(
         (Program.ACTIVE, True),
@@ -418,7 +446,7 @@ class ProgramRecordViewTests(SiteMixin, TestCase):
         self.pcr = ProgramCertRecordFactory(program=self.program, user=self.user)
 
         self.pathway = PathwayFactory(site=self.site)
-        self.pathway.programs.set([self.program])  # pylint: disable=no-member
+        self.pathway.programs.set([self.program])
 
     def _render_program_record(self, record_data=None, status_code=200):
         """ Helper method to mock rendering a user certificate."""
@@ -565,7 +593,7 @@ class ProgramRecordViewTests(SiteMixin, TestCase):
 
     def test_organization_order(self):
         """ Test that the organizations are returned in the order they were added """
-        self.course.owners.set(self.orgs)  # pylint: disable=no-member
+        self.course.owners.set(self.orgs)
         response = self.client.get(reverse('records:private_programs', kwargs={'uuid': self.program.uuid.hex}))
         program_data = json.loads(response.context_data['record'])['program']
         grade = json.loads(response.context_data['record'])['grades'][0]
@@ -621,7 +649,7 @@ class ProgramRecordViewTests(SiteMixin, TestCase):
                               course_run=course_run,
                               letter_grade='F',
                               percent_grade=0.20) for course_run in new_course_runs]
-        self.program.course_runs.set(new_course_runs)  # pylint: disable=no-member
+        self.program.course_runs.set(new_course_runs)
         response = self.client.get(reverse('records:private_programs', kwargs={'uuid': self.program.uuid.hex}))
         grades = json.loads(response.context_data['record'])['grades']
         self.assertEqual(len(grades), 1)
@@ -629,7 +657,7 @@ class ProgramRecordViewTests(SiteMixin, TestCase):
         self.assertEqual(new_course.title, grades[0]['name'])
 
     def test_learner_data(self):
-        """ Test that the learner data is returned succesfully """
+        """ Test that the learner data is returned successfully """
         response = self.client.get(reverse('records:private_programs', kwargs={'uuid': self.program.uuid.hex}))
         learner_data = json.loads(response.context_data['record'])['learner']
 
@@ -709,10 +737,10 @@ class ProgramRecordViewTests(SiteMixin, TestCase):
         })
 
         # Test that the data is parsed from an escaped string
-        self.assertContains(response, "JSON.parse(\'{\\u0022name\\u0022: \\u0022\\u003Cxss\\u003E\\u0022, " +
-                                      "\\u0022program\\u0022: {\\u0022name\\u0022: \\u0022\\u003Cxss\\u003E\\u0022, " +
-                                      "\\u0022school\\u0022: \\u0022XSS School\\u0022}, \\u0022uuid\\u0022: " +
-                                      "\\u0022uuid\\u0022}\')")
+        self.assertContains(response, "JSON.parse(\'{\\u0022name\\u0022: \\u0022\\u003Cxss\\u003E\\u0022, "
+                            + "\\u0022program\\u0022: {\\u0022name\\u0022: \\u0022\\u003Cxss\\u003E\\u0022, "
+                            + "\\u0022school\\u0022: \\u0022XSS School\\u0022}, \\u0022uuid\\u0022: "
+                            + "\\u0022uuid\\u0022}\')")
         self.assertNotContains(response, '<xss>')
 
 
@@ -975,7 +1003,7 @@ class ProgramRecordCsvViewTests(SiteMixin, TestCase):
             program_name=self.program_cert_record.program.title
         )
         filename = filename.replace(' ', '_').lower().encode('utf-8')
-        expected = 'attachment; filename="{filename}.csv"'.format(filename=filename)
+        expected = f'attachment; filename="{filename}.csv"'
 
         response = self.client.get(
             reverse('records:program_record_csv', kwargs={'uuid': self.program_cert_record.uuid.hex})

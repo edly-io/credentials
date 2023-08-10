@@ -2,8 +2,8 @@
 
 import imp
 import sys
+from unittest import mock
 
-import mock
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import DatabaseError
@@ -13,6 +13,7 @@ from django.urls import clear_url_caches, reverse
 
 from credentials.apps.core.constants import Status
 from credentials.apps.core.tests.mixins import SiteMixin
+
 
 User = get_user_model()
 
@@ -68,7 +69,7 @@ class AutoAuthTests(SiteMixin, TestCase):
         original_user_count = User.objects.count()
         response = self.client.get(self.AUTO_AUTH_PATH)
 
-        # Verify that a redirect has occured and that a new user has been created
+        # Verify that a redirect has occurred and that a new user has been created
         self.assertEqual(response.status_code, 302)
         self.assertEqual(User.objects.count(), original_user_count + 1)
 

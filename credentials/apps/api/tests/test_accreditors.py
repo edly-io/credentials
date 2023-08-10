@@ -1,9 +1,9 @@
 """
 Tests for the accreditor module.
 """
+from unittest.mock import patch
 
 from django.test import TestCase
-from mock import patch
 from testfixtures import LogCapture
 
 from credentials.apps.api.accreditors import Accreditor
@@ -11,6 +11,7 @@ from credentials.apps.api.exceptions import UnsupportedCredentialTypeError
 from credentials.apps.credentials.issuers import CourseCertificateIssuer, ProgramCertificateIssuer
 from credentials.apps.credentials.models import CourseCertificate, ProgramCertificate
 from credentials.apps.credentials.tests.factories import CourseCertificateFactory, ProgramCertificateFactory
+
 
 LOGGER_NAME = 'credentials.apps.api.accreditors'
 
@@ -57,9 +58,9 @@ class AccreditorTests(TestCase):
                 ProgramCertificateIssuer, self.program_credential
             )
 
-        with LogCapture(LOGGER_NAME) as l:
+        with LogCapture(LOGGER_NAME) as lc:
             accreditor = Accreditor(issuers=[ProgramCertificateIssuer(), ProgramCertificateIssuer()])
-            l.check((LOGGER_NAME, 'WARNING', msg))
+            lc.check((LOGGER_NAME, 'WARNING', msg))
         expected = {self.program_credential: accreditor.issuers[0]}
         self.assertEqual(accreditor.credential_type_issuer_map, expected)
 

@@ -7,6 +7,7 @@ from uuid import uuid4
 import factory
 from factory.fuzzy import FuzzyDateTime, FuzzyText
 from pytz import UTC
+from slugify import slugify
 
 from credentials.apps.catalog.models import Course, CourseRun, Organization, Pathway, Program
 from credentials.apps.core.tests.factories import SiteFactory
@@ -18,7 +19,7 @@ def add_m2m_data(m2m_relation, data):
         m2m_relation.add(*data)
 
 
-class OrganizationFactory(factory.DjangoModelFactory):
+class OrganizationFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Organization
 
@@ -28,7 +29,7 @@ class OrganizationFactory(factory.DjangoModelFactory):
     name = FuzzyText(prefix="Test Org ")
 
 
-class CourseFactory(factory.DjangoModelFactory):
+class CourseFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Course
 
@@ -43,7 +44,7 @@ class CourseFactory(factory.DjangoModelFactory):
             add_m2m_data(self.owners, extracted)
 
 
-class CourseRunFactory(factory.DjangoModelFactory):
+class CourseRunFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = CourseRun
 
@@ -55,7 +56,7 @@ class CourseRunFactory(factory.DjangoModelFactory):
     end_date = FuzzyDateTime(datetime.datetime(2014, 1, 1, tzinfo=UTC)).end_dt
 
 
-class ProgramFactory(factory.DjangoModelFactory):
+class ProgramFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Program
 
@@ -63,6 +64,7 @@ class ProgramFactory(factory.DjangoModelFactory):
     uuid = factory.LazyFunction(uuid4)
     title = FuzzyText(prefix="Test Program ")
     type = FuzzyText()
+    type_slug = slugify(str(type))
     status = Program.ACTIVE
 
     @factory.post_generation
@@ -76,7 +78,7 @@ class ProgramFactory(factory.DjangoModelFactory):
             add_m2m_data(self.authoring_organizations, extracted)
 
 
-class PathwayFactory(factory.DjangoModelFactory):
+class PathwayFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Pathway
 
