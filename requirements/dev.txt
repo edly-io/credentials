@@ -102,7 +102,7 @@ defusedxml==0.8.0rc2
     #   -r requirements/test.txt
     #   python3-openid
     #   social-auth-core
-didkit==0.3.2
+didkit==0.2.1
     # via -r requirements/test.txt
 dill==0.3.8
     # via

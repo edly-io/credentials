@@ -128,7 +128,7 @@ defusedxml==0.8.0rc2
     #   -r requirements/production.txt
     #   python3-openid
     #   social-auth-core
-didkit==0.3.2
+didkit==0.2.1
     # via
     #   -r requirements/dev.txt
     #   -r requirements/production.txt
