@@ -99,6 +99,7 @@ dill==0.3.8
     # via pylint
 distlib==0.3.8
     # via virtualenv
+django==4.2.11
     # via
     #   -c requirements/common_constraints.txt
     #   -r requirements/base.txt
@@ -405,9 +406,8 @@ pytz==2024.1
     # via
     #   -r requirements/base.txt
     #   drf-yasg
-pyyaml==5.4.1
+pyyaml==6.0.1
     # via
-    #   -c requirements/constraints.txt
     #   -r requirements/base.txt
     #   code-annotations
     #   drf-yasg
