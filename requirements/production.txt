@@ -232,12 +232,17 @@ jmespath==1.0.1
     # via
     #   boto3
     #   botocore
-lxml[html-clean]==5.1.1
+lxml[html-clean]==5.2.1
     # via
     #   -c requirements/constraints.txt
     #   -r requirements/base.txt
     #   edx-credentials-themes
     #   edx-i18n-tools
+    #   lxml-html-clean
+lxml-html-clean==0.1.1
+    # via
+    #   -r requirements/base.txt
+    #   lxml
 markdown==3.6
     # via -r requirements/base.txt
 markupsafe==2.1.5
@@ -341,7 +346,7 @@ pytz==2024.1
     #   -r requirements/base.txt
     #   django-ses
     #   drf-yasg
-pyyaml==5.4.1
+pyyaml==6.0.1
     # via
     #   -c requirements/constraints.txt
     #   -r requirements/base.txt
