@@ -23,3 +23,10 @@ urllib3<2
 # Release notes: https://pypi.org/project/lxml/5.2.0/
 # Github issue: https://github.com/openedx/i18n-tools/issues/144
 lxml<5.2
+
+# newer version of didkit doesn't work with python3.12.2
+didkit==0.2.1
+
+# backports-zoneinfo comes by-default in newer versions of python
+# it gives error while building wheel with python>=3.9
+backports.zoneinfo ; python_version < "3.9"

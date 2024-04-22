@@ -28,8 +28,9 @@ backoff==2.2.1
     #   -r requirements/dev.txt
     #   -r requirements/production.txt
     #   segment-analytics-python
-backports-zoneinfo==0.2.1
+backports-zoneinfo==0.2.1 ; python_version < "3.9"
     # via
+    #   -c requirements/constraints.txt
     #   -r requirements/dev.txt
     #   -r requirements/production.txt
     #   django
@@ -44,11 +45,11 @@ bleach==6.1.0
     # via
     #   -r requirements/dev.txt
     #   -r requirements/production.txt
-boto3==1.34.85
+boto3==1.34.88
     # via
     #   -r requirements/production.txt
     #   django-ses
-botocore==1.34.85
+botocore==1.34.88
     # via
     #   -r requirements/production.txt
     #   boto3
@@ -128,8 +129,9 @@ defusedxml==0.8.0rc2
     #   -r requirements/production.txt
     #   python3-openid
     #   social-auth-core
-didkit==0.3.2
+didkit==0.2.1
     # via
+    #   -c requirements/constraints.txt
     #   -r requirements/dev.txt
     #   -r requirements/production.txt
 dill==0.3.8
@@ -208,7 +210,7 @@ django-rest-swagger==2.2.0
     # via
     #   -r requirements/dev.txt
     #   -r requirements/production.txt
-django-ses==3.6.0
+django-ses==4.0.0
     # via -r requirements/production.txt
 django-simple-history==3.5.0
     # via
@@ -218,7 +220,7 @@ django-sortedm2m==3.1.1
     # via
     #   -r requirements/dev.txt
     #   -r requirements/production.txt
-django-statici18n==2.4.0
+django-statici18n==2.5.0
     # via
     #   -r requirements/dev.txt
     #   -r requirements/production.txt
@@ -284,7 +286,7 @@ edx-django-release-util==1.4.0
     # via
     #   -r requirements/dev.txt
     #   -r requirements/production.txt
-edx-django-sites-extensions==4.0.2
+edx-django-sites-extensions==4.2.0
     # via
     #   -r requirements/dev.txt
     #   -r requirements/production.txt
@@ -327,13 +329,13 @@ edx-toggles==5.2.0
     #   -r requirements/dev.txt
     #   -r requirements/production.txt
     #   edx-event-bus-kafka
-exceptiongroup==1.2.0
+exceptiongroup==1.2.1
     # via
     #   -r requirements/dev.txt
     #   pytest
 factory-boy==3.3.0
     # via -r requirements/dev.txt
-faker==24.9.0
+faker==24.11.0
     # via
     #   -r requirements/dev.txt
     #   factory-boy
@@ -357,7 +359,7 @@ greenlet==3.0.3
     # via
     #   -r requirements/production.txt
     #   gevent
-gunicorn==21.2.0
+gunicorn==22.0.0
     # via -r requirements/production.txt
 httpretty==1.1.4
     # via -r requirements/dev.txt
@@ -433,7 +435,7 @@ mysqlclient==2.2.4
     # via
     #   -r requirements/dev.txt
     #   -r requirements/production.txt
-newrelic==9.8.0
+newrelic==9.9.0
     # via
     #   -r requirements/dev.txt
     #   -r requirements/production.txt
@@ -455,7 +457,7 @@ openedx-atlas==0.6.0
     # via
     #   -r requirements/dev.txt
     #   -r requirements/production.txt
-openedx-events==9.9.1
+openedx-events==9.9.2
     # via
     #   -r requirements/dev.txt
     #   -r requirements/production.txt
@@ -500,7 +502,7 @@ platformdirs==4.2.0
     #   pylint
     #   tox
     #   virtualenv
-pluggy==1.4.0
+pluggy==1.5.0
     # via
     #   -r requirements/dev.txt
     #   pytest
@@ -620,8 +622,6 @@ pytz==2024.1
     #   -r requirements/production.txt
     #   django-ses
     #   drf-yasg
-pywatchman==2.0.0 ; "linux" in sys_platform
-    # via -r requirements/dev.txt
 pyyaml==5.4.1
     # via
     #   -c requirements/constraints.txt
@@ -777,7 +777,7 @@ urllib3==1.26.18
     #   docker
     #   requests
     #   responses
-virtualenv==20.25.1
+virtualenv==20.25.3
     # via
     #   -r requirements/dev.txt
     #   tox
