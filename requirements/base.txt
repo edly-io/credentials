@@ -51,8 +51,10 @@ defusedxml==0.8.0rc2
     # via
     #   python3-openid
     #   social-auth-core
-didkit==0.3.2
-    # via -r requirements/base.in
+didkit==0.2.1
+    # via
+    #   -c requirements/constraints.txt
+    #   -r requirements/base.in
 django==4.2.11
     # via
     #   -c requirements/common_constraints.txt
