@@ -187,7 +187,7 @@ class SiteConfiguration(models.Model):
         Returns:
             str: JWT access token
         """
-        key = f'siteconfiguration_access_token_{self.id}'
+        key = 'siteconfiguration_access_token'
         access_token = cache.get(key)
 
         if not access_token:
