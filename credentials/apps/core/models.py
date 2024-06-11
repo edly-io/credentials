@@ -3,6 +3,8 @@
 import datetime
 import hashlib
 import logging
+import time
+from requests.models import Response
 
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
@@ -175,7 +177,7 @@ class SiteConfiguration(models.Model):
     @property
     def user_api_url(self):
         return '{}/api/user/v1/'.format(self.lms_url_root.strip('/'))
-
+    
     @property
     def access_token(self):
         """ Returns an access token for this site's service user.
@@ -192,15 +194,31 @@ class SiteConfiguration(models.Model):
 
         if not access_token:
             url = f'{self.oauth2_provider_url}/access_token'
-            access_token, expiration_datetime = EdxRestApiClient.get_oauth_access_token(
-                url,
-                self.oauth2_client_id,
-                self.oauth2_client_secret,
-                token_type='jwt'
-            )
+            retries = [15, 30, 45]  # Retry delays in seconds
+            attempt = 0
 
-            expires = (expiration_datetime - datetime.datetime.utcnow()).seconds
-            cache.set(key, access_token, expires)
+            while attempt < len(retries) + 1:
+                try:
+                    log.info(f'Feching access token for URL: {url}')
+                    access_token, expiration_datetime = EdxRestApiClient.get_oauth_access_token(
+                        url,
+                        self.oauth2_client_id,
+                        self.oauth2_client_secret,
+                        token_type='jwt'
+                    )
+                    expires = (expiration_datetime - datetime.datetime.utcnow()).seconds
+                    cache.set(key, access_token, expires)
+                    return access_token
+                except Exception as e:
+                    log.info(f'Getting exception wile getting token {e}')
+                    if isinstance(e.response, Response) and e.response.status_code == 403:
+                        attempt += 1
+                        if attempt > len(retries):
+                            raise e
+                        
+                        seconds = retries[attempt - 1]
+                        log.info(f'Retrying attempt no: {attempt} for access token request after seconds: {seconds} because of exceptoin {e}')
+                        time.sleep(seconds)
 
         return access_token
 
