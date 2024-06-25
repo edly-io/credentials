@@ -177,7 +177,7 @@ class SiteConfiguration(models.Model):
     @property
     def user_api_url(self):
         return '{}/api/user/v1/'.format(self.lms_url_root.strip('/'))
-    
+
     @property
     def access_token(self):
         """ Returns an access token for this site's service user.
