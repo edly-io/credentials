@@ -98,13 +98,6 @@ class BadgeTemplate(AbstractCredential):
     def __str__(self):
         return self.name
 
-    def save(self, *args, **kwargs):
-        super().save()
-        # auto-evaluate type:
-        if not self.origin:
-            self.origin = self.ORIGIN
-            self.save(*args, **kwargs)
-
     @property
     def groups(self):
         """

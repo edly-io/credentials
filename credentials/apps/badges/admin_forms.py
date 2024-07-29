@@ -175,7 +175,7 @@ class BadgeRequirementForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         self.fields["blend"].choices = Choices(*[(chr(i), chr(i)) for i in range(65, 91)])
-        self.fields["blend"].initial = chr(65 + self.template.requirements.count())
+        # self.fields["blend"].initial = chr(65 + self.template.requirements.count())
 
 
 class PenaltyDataRuleFormSet(ParentMixin, forms.BaseInlineFormSet):

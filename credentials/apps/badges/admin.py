@@ -282,7 +282,7 @@ class CredlyBadgeTemplateAdmin(admin.ModelAdmin):
     ]
 
     def has_add_permission(self, request):
-        return False
+        return True
 
     def dashboard_link(self, obj):
         url = obj.management_url
@@ -379,20 +379,20 @@ class BadgeRequirementAdmin(admin.ModelAdmin):
     ]
 
     def has_add_permission(self, request):
-        return False
+        return True
 
     def template_link(self, instance):
         """
         Interactive link to parent (badge template).
         """
-        url = reverse("admin:badges_credlybadgetemplate_change", args=[instance.template.pk])
+        url = reverse("admin:open_badges_openbadgetemplate_change", args=[instance.template.pk])
         return format_html('<a href="{}">{}</a>', url, instance.template)
 
     template_link.short_description = _("badge template")
 
     def response_change(self, request, obj):
         if "_save" in request.POST:
-            return HttpResponseRedirect(reverse("admin:badges_credlybadgetemplate_change", args=[obj.template.pk]))
+            return HttpResponseRedirect(reverse("admin:open_badges_openbadgetemplate_change", args=[obj.template.pk]))
         return super().response_change(request, obj)
 
 
@@ -436,7 +436,7 @@ class BadgePenaltyAdmin(admin.ModelAdmin):
     form = BadgePenaltyForm
 
     def has_add_permission(self, request):
-        return False
+        return True
 
     def template_link(self, instance):
         """
@@ -503,7 +503,7 @@ class BadgeProgressAdmin(admin.ModelAdmin):
         return obj.ratio
 
     def has_add_permission(self, request):
-        return False
+        return True
 
 
 class CredlyBadgeAdmin(admin.ModelAdmin):
@@ -538,14 +538,14 @@ class CredlyBadgeAdmin(admin.ModelAdmin):
     )
 
     def has_add_permission(self, request):
-        return False
+        return True
 
 
 # register admin configurations with respect to the feature flag
 if is_badges_enabled():
-    admin.site.register(CredlyOrganization, CredlyOrganizationAdmin)
+    # admin.site.register(CredlyOrganization, CredlyOrganizationAdmin)
     admin.site.register(CredlyBadgeTemplate, CredlyBadgeTemplateAdmin)
-    admin.site.register(CredlyBadge, CredlyBadgeAdmin)
-    admin.site.register(BadgeRequirement, BadgeRequirementAdmin)
-    admin.site.register(BadgePenalty, BadgePenaltyAdmin)
-    admin.site.register(BadgeProgress, BadgeProgressAdmin)
+    # admin.site.register(CredlyBadge, CredlyBadgeAdmin)
+    # admin.site.register(BadgeRequirement, BadgeRequirementAdmin)
+    # admin.site.register(BadgePenalty, BadgePenaltyAdmin)
+    # admin.site.register(BadgeProgress, BadgeProgressAdmin)

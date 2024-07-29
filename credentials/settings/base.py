@@ -77,6 +77,7 @@ PROJECT_APPS = [
     "credentials.apps.plugins",
     "credentials.apps.verifiable_credentials",
     "credentials.apps.badges",
+    "credentials.apps.open_badges"
 ]
 
 INSTALLED_APPS += THIRD_PARTY_APPS

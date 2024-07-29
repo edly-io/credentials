@@ -29,6 +29,7 @@ from rest_framework import permissions
 
 from credentials.apps.badges.toggles import is_badges_enabled
 from credentials.apps.core import views as core_views
+from credentials.apps.open_badges.toggles import is_open_badges_enabled
 from credentials.apps.plugins.constants import PROJECT_TYPE
 from credentials.apps.records.views import ProgramListingView
 from credentials.apps.verifiable_credentials.toggles import is_verifiable_credentials_enabled
@@ -82,6 +83,11 @@ if is_verifiable_credentials_enabled():
 if is_badges_enabled():
     urlpatterns += [
         re_path(r"^badges/", include(("credentials.apps.badges.urls", "badges"), namespace="badges")),
+    ]
+
+if is_open_badges_enabled():
+    urlpatterns += [
+        re_path(r"^badges/", include(("credentials.apps.open_badges.urls", "badges"), namespace="badges")),
     ]
 
 # edx-drf-extensions csrf app
