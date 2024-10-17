@@ -20,3 +20,9 @@ CLIENT_SITE_SETUP_FIELDS = [
 ]
 
 EDLY_PANEL_WORKER_USER = 'edly_panel_worker'
+
+AVAILABLE_THEMES = [
+    'openedx'
+]
+
+DEFAULT_THEME = 'openedx'

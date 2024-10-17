@@ -9,7 +9,7 @@ from rest_framework.views import APIView
 
 from credentials.apps.core.models import SiteConfiguration
 from credentials.apps.edx_credentials_extensions.edly_credentials_app.api.permissions import CanAccessSiteCreation
-from credentials.apps.edx_credentials_extensions.edly_credentials_app.api.v1.constants import ERROR_MESSAGES
+from credentials.apps.edx_credentials_extensions.edly_credentials_app.api.v1.constants import ERROR_MESSAGES, AVAILABLE_THEMES, DEFAULT_THEME
 from credentials.apps.edx_credentials_extensions.edly_credentials_app.helpers import (
     get_credentials_site_configuration,
     validate_site_configurations,
@@ -72,7 +72,7 @@ class EdlySiteViewSet(APIView):
                 edx_org_short_name=edly_slug,
                 platform_name=self.request.data.get('platform_name', ''),
                 company_name=self.request.data.get('platform_name', ''),
-                theme_name=theme_dir_name,
+                theme_name=theme_dir_name if theme_dir_name in AVAILABLE_THEMES else DEFAULT_THEME,
                 lms_url_root=lms_url_root,
                 catalog_api_url=catalog_api_url,
                 tos_url='{lms_url_root}/tos'.format(lms_url_root=lms_url_root),
