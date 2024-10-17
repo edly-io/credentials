@@ -73,9 +73,9 @@ class RenderCredential(SocialMediaMixin, ThemeViewMixin, TemplateView):
         program_details = user_credential.credential.program_details
         for organization in program_details.organizations:
             organization_names.append(organization.display_name)
-            if not organization.certificate_logo_image_url:
-                raise MissingCertificateLogoError('No certificate image logo defined for program: [{program_uuid}]'.
-                                                  format(program_uuid=program_details.uuid))
+            # if not organization.certificate_logo_image_url:
+            #     raise MissingCertificateLogoError('No certificate image logo defined for program: [{program_uuid}]'.
+            #                                       format(program_uuid=program_details.uuid))
 
         org_name_string = ""
         if len(organization_names) == 1:
