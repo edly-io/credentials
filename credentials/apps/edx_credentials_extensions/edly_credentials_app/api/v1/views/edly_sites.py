@@ -1,13 +1,18 @@
 """
 Views for Edly Site Creation API.
 """
+import logging
+
+from django.contrib.auth import get_user_model
 from django.contrib.sites.models import Site
+from django.db import transaction
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from credentials.apps.core.models import SiteConfiguration
+from credentials.apps.catalog.models import Course, CourseRun, Organization, Pathway, Program
 from credentials.apps.edx_credentials_extensions.edly_credentials_app.api.permissions import CanAccessSiteCreation
 from credentials.apps.edx_credentials_extensions.edly_credentials_app.api.v1.constants import ERROR_MESSAGES
 from credentials.apps.edx_credentials_extensions.edly_credentials_app.helpers import (
@@ -15,6 +20,8 @@ from credentials.apps.edx_credentials_extensions.edly_credentials_app.helpers im
     validate_site_configurations,
 )
 
+logger = logging.getLogger(__name__)
+User = get_user_model()
 
 class EdlySiteViewSet(APIView):
     """
@@ -82,3 +89,53 @@ class EdlySiteViewSet(APIView):
                 edly_client_branding_and_django_settings=get_credentials_site_configuration(self.request.data),
             )
         )
+
+
+class EdlySiteDeletionViewSet(APIView):
+    """
+    Delete credentials site and it's site configuration.
+    """
+    permission_classes = [IsAuthenticated, CanAccessSiteCreation]
+
+    def delete_users(self, request):
+        """Delete all the sync user for a given site."""
+        user_emails = request.data.get('emails')
+        user_names = request.data.get('usernames')
+        if not all([len(user_emails), len(user_names)]):
+            logger.info(f"No user deleted for given site : {(str(request.site))}")
+            return 
+
+        users = User.objects.filter(
+            email__in=user_emails,
+            username__in=user_names
+        )
+        users.delete()
+
+    def delete_site(self, request):
+        """Process site deletion."""
+        SiteConfiguration.objects.get(site=request.site).delete()
+        request.site.delete()
+    
+    def process_client_sites_deletion(self, request):
+        """
+        Process deletion of site and it's configurations, data in a transaction.
+        """
+        with transaction.atomic():
+            self.delete_users(request)
+            self.delete_site(request)
+
+    def post(self, request):
+        """
+        POST /api/edly_api/v1/delete_site
+        """
+        try:
+            self.process_client_sites_deletion(request)
+            return Response(
+                {'success': 'Successfully deleted site and its configurations.'},
+                status=status.HTTP_200_OK
+            )
+        except TypeError:
+            return Response(
+                {'error': 'Failed to delete site and its configurations.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
