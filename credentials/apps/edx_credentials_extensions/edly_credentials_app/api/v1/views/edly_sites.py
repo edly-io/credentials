@@ -115,6 +115,7 @@ class EdlySiteDeletionViewSet(APIView):
     def delete_site(self, request):
         """Process site deletion."""
         current_site = get_current_site(request)
+        logger.info(f"Deleting site : {(str(current_site))}")
         current_site.siteconfiguration.delete()
         current_site.delete()
     
