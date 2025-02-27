@@ -5,6 +5,7 @@ import logging
 
 from django.contrib.auth import get_user_model
 from django.contrib.sites.models import Site
+from django.contrib.sites.shortcuts import get_current_site
 from django.db import transaction
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
@@ -113,8 +114,9 @@ class EdlySiteDeletionViewSet(APIView):
 
     def delete_site(self, request):
         """Process site deletion."""
-        SiteConfiguration.objects.get(site=request.site).delete()
-        request.site.delete()
+        current_site = get_current_site(request)
+        current_site.siteconfiguration.delete()
+        current_site.delete()
     
     def process_client_sites_deletion(self, request):
         """
