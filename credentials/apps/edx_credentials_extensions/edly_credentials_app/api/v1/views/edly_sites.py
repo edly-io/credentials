@@ -140,10 +140,10 @@ class EdlySiteDeletionViewSet(APIView):
                 status=status.HTTP_200_OK
             )
         except TypeError as err:
-            logger.exception(f'Site: {request.data.get("delete_site_url")}, Type Error: {str(err)}')
+            logger.info(f'Site: {request.data.get("delete_site_url")}, Type Error: {str(err)}')
            
         except Exception as err:
-            logger.exception(f'Site: {request.data.get("delete_site_url")}, Error: {str(err)}')
+            logger.info(f'Site: {request.data.get("delete_site_url")}, Error: {str(err)}')
 
         return Response(
             {'error': 'Failed to delete site and its configurations.'},
