@@ -114,8 +114,7 @@ class EdlySiteDeletionViewSet(APIView):
 
     def delete_site(self, request):
         """Process site deletion."""
-        site_url = request.data.get('delete_site_url', '').rstrip('/')
-        site_domain = site_url.replace('https://', '')
+        site_domain = request.data.get('delete_site_url', '')
         current_site = Site.objects.get(domain=site_domain)
         logger.info(f"Deleting site : {(str(current_site))}")
         current_site.siteconfiguration.delete()
