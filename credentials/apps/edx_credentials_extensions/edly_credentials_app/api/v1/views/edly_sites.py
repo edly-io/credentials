@@ -114,7 +114,9 @@ class EdlySiteDeletionViewSet(APIView):
 
     def delete_site(self, request):
         """Process site deletion."""
-        current_site = get_current_site(request)
+        site_url = request.data.get('delete_site_url', '').rstrip('/')
+        site_domain = site_url.replace('https://', '')
+        current_site = Site.objects.get(domain=site_domain)
         logger.info(f"Deleting site : {(str(current_site))}")
         current_site.siteconfiguration.delete()
         current_site.delete()
@@ -137,8 +139,13 @@ class EdlySiteDeletionViewSet(APIView):
                 {'success': 'Successfully deleted site and its configurations.'},
                 status=status.HTTP_200_OK
             )
-        except TypeError:
-            return Response(
-                {'error': 'Failed to delete site and its configurations.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        except TypeError as err:
+            logger.exception(f'Site: {request.data.get("delete_site_url")}, Type Error: {str(err)}')
+           
+        except Exception as err:
+            logger.exception(f'Site: {request.data.get("delete_site_url")}, Error: {str(err)}')
+
+        return Response(
+            {'error': 'Failed to delete site and its configurations.'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
