@@ -178,4 +178,9 @@ class SiteConfigurationAdmin(admin.ModelAdmin):
                 )
             },
         ),
+        (_('Edly Settings'), {
+            'fields': (
+                'edly_client_branding_and_django_settings',
+            )
+        }),
     )
