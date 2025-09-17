@@ -142,6 +142,7 @@ class SiteConfigurationAdmin(admin.ModelAdmin):
             {
                 "fields": (
                     "site",
+                    "edx_org_short_name",
                     "platform_name",
                     "company_name",
                     "segment_key",
@@ -178,4 +179,9 @@ class SiteConfigurationAdmin(admin.ModelAdmin):
                 )
             },
         ),
+        (_('Edly Settings'), {
+            'fields': (
+                'edly_client_branding_and_django_settings',
+            )
+        }),
     )

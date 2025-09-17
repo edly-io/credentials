@@ -2,6 +2,7 @@
 
 import hashlib
 from urllib.parse import urljoin
+import logging
 
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
@@ -10,7 +11,9 @@ from django.core.cache import cache
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from edx_rest_api_client.client import OAuthAPIClient
+from jsonfield.fields import JSONField
 
+log = logging.getLogger(__name__)
 
 class SiteConfiguration(models.Model):
     """
@@ -20,6 +23,17 @@ class SiteConfiguration(models.Model):
     """
 
     site = models.OneToOneField(Site, null=False, blank=False, on_delete=models.CASCADE)
+    edx_org_short_name = models.CharField(
+        max_length=255,
+        unique=True,
+        verbose_name=u'Organization short name',
+        help_text=_(
+            'Unique, short string identifier for organization, same as LMS. '
+            'Please do not use spaces or special characters. '
+            'Only allowed special characters are period (.), hyphen (-) and underscore (_).'
+        ),
+        null=True,
+    )
     platform_name = models.CharField(
         verbose_name=_("Platform Name"),
         help_text=_("Name of your Open edX platform"),
@@ -124,6 +138,13 @@ class SiteConfiguration(models.Model):
     enable_twitter_sharing = models.BooleanField(
         verbose_name=_("Enable Twitter sharing"), help_text=_("Enable sharing via Twitter"), default=True
     )
+    edly_client_branding_and_django_settings = JSONField(
+        verbose_name=_('Edly client theme branding & Django settings'),
+        help_text=_('JSON string containing edly client theme branding & Django settings.'),
+        null=False,
+        blank=False,
+        default={}
+    )
 
     def __str__(self):
         return self.site.name
@@ -188,6 +209,22 @@ class SiteConfiguration(models.Model):
 
         return user_data
 
+    def get_edly_configuration_value(self, name, default=None):
+        """
+        Return Configuration value for the key specified as name argument.
+        Function logs a message if there is an error retrieving a key.
+        Arguments:
+            name (str): Name of the key for which to return configuration value.
+            default: default value to return if key is not found in the configuration
+        Returns:
+            Configuration value for the given key or returns `None` if default is not available.
+        """
+        try:
+            return self.edly_client_branding_and_django_settings.get(name, default)
+        except AttributeError as error:
+            log.exception('Invalid JSON data. \n [%s]', error)
+
+        return default
 
 class User(AbstractUser):
     """
