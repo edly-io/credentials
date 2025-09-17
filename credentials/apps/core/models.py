@@ -23,6 +23,17 @@ class SiteConfiguration(models.Model):
     """
 
     site = models.OneToOneField(Site, null=False, blank=False, on_delete=models.CASCADE)
+    edx_org_short_name = models.CharField(
+        max_length=255,
+        unique=True,
+        verbose_name=u'Organization short name',
+        help_text=_(
+            'Unique, short string identifier for organization, same as LMS. '
+            'Please do not use spaces or special characters. '
+            'Only allowed special characters are period (.), hyphen (-) and underscore (_).'
+        ),
+        null=True,
+    )
     platform_name = models.CharField(
         verbose_name=_("Platform Name"),
         help_text=_("Name of your Open edX platform"),

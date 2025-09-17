@@ -142,6 +142,7 @@ class SiteConfigurationAdmin(admin.ModelAdmin):
             {
                 "fields": (
                     "site",
+                    "edx_org_short_name",
                     "platform_name",
                     "company_name",
                     "segment_key",
