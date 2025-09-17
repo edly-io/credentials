@@ -60,7 +60,7 @@ def filter_visible(qs: "QuerySet") -> "QuerySet":
     Filters a UserCredentials queryset by excluding credentials that aren't
     supposed to be visible yet.
     """
-    visible_course_certs = _filter_visible_course_certificates(qs.filter(course_credentials__isnull=False))
+    visible_course_certs = _filter_visible_course_certificates(qs)
     visible_program_certs = _filter_visible_program_certificates(qs.filter(program_credentials__isnull=False))
     visible_certs = visible_course_certs | visible_program_certs
 
