@@ -60,7 +60,7 @@ def filter_visible(qs: "QuerySet") -> "QuerySet":
     Filters a UserCredentials queryset by excluding credentials that aren't
     supposed to be visible yet.
     """
-    visible_course_certs = _filter_visible_course_certificates(qs.filter(course_credentials__isnull=False))
+    visible_course_certs = _filter_visible_course_certificates(qs)
     visible_program_certs = _filter_visible_program_certificates(qs.filter(program_credentials__isnull=False))
     visible_certs = visible_course_certs | visible_program_certs
 
@@ -121,7 +121,7 @@ def _get_program_certificate_visible_date(user_program_credential: UserCredentia
         (DateTime or None): The date on which the program credential should be
         visible. (It shouldn’t return None but is technically possible.)
     """
-    last_date = None  # type: Optional[datetime.datetime]
+    last_date = user_program_credential.created
     for course_run in user_program_credential.credential.program.course_runs.all():
         # Does the user have a course cert for this course run?
         course_run_cert = UserCredential.objects.filter(
