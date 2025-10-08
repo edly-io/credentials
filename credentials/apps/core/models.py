@@ -142,8 +142,7 @@ class SiteConfiguration(models.Model):
         verbose_name=_('Edly client theme branding & Django settings'),
         help_text=_('JSON string containing edly client theme branding & Django settings.'),
         null=False,
-        blank=False,
-        default={}
+        default=dict
     )
 
     def __str__(self):
