@@ -171,7 +171,8 @@ def get_user_program_data(
         allowed_statuses.append(ProgramStatus.RETIRED.value)
 
     # Get a list of programs
-    programs = get_filtered_programs(request_site, allowed_statuses, **course_filters)
+    # EDLYCUSTOM: we do not save course cert in credentials service, so removing this filter for now
+    programs = get_filtered_programs(request_site, allowed_statuses)
 
     # Get the completed programs and a UUID set using the program_credentials
     program_credential_ids = [program_credential.credential_id for program_credential in program_credentials]
