@@ -9,8 +9,8 @@ from edx_toggles.toggles import WaffleSwitch
 # .. toggle_default: False
 # .. toggle_description: When enabled, the credentials service checks the
 #      ProgramCertificateTemplate model for a custom HTML template before
-#      falling back to file-based certificate templates. Allows per-program,
-#      per-type, and per-organization certificate customization via Django admin
+#      falling back to file-based certificate templates. Allows per-program
+#      and per-organization certificate customization via Django admin
 #      without touching files or rebuilding images.
 # .. toggle_use_cases: open_edx
 # .. toggle_creation_date: 2026-03-26

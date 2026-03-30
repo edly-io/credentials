@@ -433,15 +433,13 @@ class ProgramCertificateTemplate(TimeStampedModel):
     """
     Stores custom Django template HTML for program certificates.
 
-    Allows per-program, per-type, and per-organization certificate template
-    customization via Django admin without touching files or rebuilding images.
+    Allows per-program and per-organization certificate template customization
+    via Django admin without touching files or rebuilding images.
     Gated by the ``credentials.custom_program_certificate_templates`` waffle switch.
 
     Selection priority (most specific first):
       1. program_certificate + organization  — exact program, specific org
       2. program_certificate only            — exact program, any org
-      3. program_type + organization         — any program of this type, specific org
-      4. program_type only                   — any program of this type, any org
 
     The first active match wins. Falls back to file-based templates if no match.
 
@@ -466,9 +464,9 @@ class ProgramCertificateTemplate(TimeStampedModel):
     )
     template = models.TextField(
         help_text=(
-            "Django template HTML. Must extend 'credentials/programs/base.html'. "
-            "Override blocks: accomplishment_summary, accomplishment_stamp_title, "
-            "background_watermark, background_logo, platform_logo."
+            "Standalone Django template HTML rendered directly via from_string(). "
+            "Use {% load certificate_assets %}{% certificate_asset_url 'slug' %} "
+            "to reference uploaded assets."
         ),
     )
     is_active = models.BooleanField(default=True)
@@ -477,6 +475,14 @@ class ProgramCertificateTemplate(TimeStampedModel):
         ordering = ["-created"]
         verbose_name = "Program Certificate Template"
         verbose_name_plural = "Program Certificate Templates"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["program_certificate", "organization"],
+                condition=models.Q(is_active=True),
+                nulls_distinct=False,
+                name="unique_active_template_per_program_org",
+            )
+        ]
 
     def __str__(self):
         parts = []
@@ -526,7 +532,8 @@ class CertificateAsset(TimeStampedModel):
     .. no_pii:
     """
 
-    description = models.TextField(
+    description = models.CharField(
+        max_length=255,
         help_text="Human-readable description of this asset (e.g. 'FBR Pakistan org logo – PNG 200×200').",
     )
     asset = models.FileField(

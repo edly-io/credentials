@@ -206,22 +206,25 @@ class RenderCredential(SocialMediaMixin, ThemeViewMixin, TemplateView):
 
         return context
 
-    def get_credential_template(self):
+    @cached_property
+    def db_certificate_template(self):
+        """Return the active DB-backed ProgramCertificateTemplate for this credential, or None."""
+        if not CUSTOM_PROGRAM_CERTIFICATE_TEMPLATES.is_enabled():
+            return None
         credential_type = self.user_credential.credential
+        org_keys = [org.key for org in credential_type.program_details.organizations]
+        return get_custom_program_certificate_template(
+            program_certificate=credential_type,
+            org_keys=org_keys,
+        )
 
-        if CUSTOM_PROGRAM_CERTIFICATE_TEMPLATES.is_enabled():
-            program_details = credential_type.program_details
-            org_keys = [org.key for org in program_details.organizations]
-            db_template = get_custom_program_certificate_template(
-                program_certificate=credential_type,
-                org_keys=org_keys,
-            )
-            if db_template:
-                self._certificate_only = True
-                return engines["django"].from_string(db_template.template)
+    def get_credential_template(self):
+        if self.db_certificate_template:
+            return engines["django"].from_string(self.db_certificate_template.template)
 
         # Fallback: file-based template lookup (existing behaviour).
         # NOTE: In the future we will need to account for other types of credentials besides programs.
+        credential_type = self.user_credential.credential
         template_names = [
             f"credentials/programs/{credential_type.program_uuid}/certificate.html",
             "credentials/programs/{type}/certificate.html".format(type=slugify(credential_type.program_details.type)),
@@ -229,7 +232,7 @@ class RenderCredential(SocialMediaMixin, ThemeViewMixin, TemplateView):
         return self.select_theme_template(template_names)
 
     def get_template_names(self):
-        if getattr(self, "_certificate_only", False):
+        if self.db_certificate_template:
             return ["credentials/certificate_only.html"]
         return super().get_template_names()
 

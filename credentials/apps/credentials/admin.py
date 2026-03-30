@@ -123,6 +123,7 @@ class ProgramCompletionEmailConfigurationAdmin(TimeStampedModelAdminMixin, admin
 class ProgramCertificateTemplateAdmin(TimeStampedModelAdminMixin, admin.ModelAdmin):
     list_display = ("__str__", "organization", "is_active", "modified")
     list_filter = ("is_active",)
+    list_select_related = ("program_certificate", "organization")
     search_fields = ("organization__key", "program_certificate__program_uuid")
     autocomplete_fields = ("program_certificate", "organization")
     fieldsets = (
@@ -143,9 +144,10 @@ class ProgramCertificateTemplateAdmin(TimeStampedModelAdminMixin, admin.ModelAdm
             {
                 "fields": ("template",),
                 "description": (
-                    "Django template HTML. Must extend <code>credentials/programs/base.html</code>. "
-                    "Available blocks: accomplishment_summary, accomplishment_stamp_title, "
-                    "background_watermark, background_logo, platform_logo, styles, certificate_metadata."
+                    "Standalone Django template HTML rendered directly via <code>from_string()</code>. "
+                    "All standard Django template tags and filters are available. "
+                    "Use <code>{% load certificate_assets %}{% certificate_asset_url 'slug' %}</code> "
+                    "to reference uploaded assets."
                 ),
             },
         ),
