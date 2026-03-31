@@ -476,12 +476,26 @@ class ProgramCertificateTemplate(TimeStampedModel):
         verbose_name = "Program Certificate Template"
         verbose_name_plural = "Program Certificate Templates"
         constraints = [
+            # Prevents two active templates targeting the same program+org pair.
+            # Covers the case where organization is specified (NOT NULL).
             models.UniqueConstraint(
                 fields=["program_certificate", "organization"],
                 condition=models.Q(is_active=True),
-                nulls_distinct=False,
                 name="unique_active_template_per_program_org",
-            )
+                violation_error_message=(
+                    "An active template for this program certificate and organization already exists."
+                ),
+            ),
+            # Prevents two active templates targeting the same program with no org scoping.
+            # Needed as a separate constraint because NULL != NULL in SQL unique indexes.
+            models.UniqueConstraint(
+                fields=["program_certificate"],
+                condition=models.Q(is_active=True, organization=None),
+                name="unique_active_template_per_program_no_org",
+                violation_error_message=(
+                    "An active template for this program certificate without an organization already exists."
+                ),
+            ),
         ]
 
     def __str__(self):
