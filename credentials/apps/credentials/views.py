@@ -7,6 +7,7 @@ from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
 from django.http import Http404
 from django.shortcuts import get_object_or_404
+from django.template import engines
 from django.template.defaultfilters import slugify
 from django.utils import timezone
 from django.utils.decorators import method_decorator
@@ -17,7 +18,12 @@ from django.views.generic import TemplateView
 from credentials.apps.catalog.data import OrganizationDetails, ProgramDetails
 from credentials.apps.core.views import ThemeViewMixin
 from credentials.apps.credentials.exceptions import MissingCertificateLogoError
-from credentials.apps.credentials.models import ProgramCertificate, UserCredential
+from credentials.apps.credentials.models import (
+    ProgramCertificate,
+    UserCredential,
+    get_custom_program_certificate_template,
+)
+from credentials.apps.credentials.toggles import CUSTOM_PROGRAM_CERTIFICATE_TEMPLATES
 from credentials.apps.credentials.utils import get_credential_visible_date, to_language
 
 
@@ -200,17 +206,35 @@ class RenderCredential(SocialMediaMixin, ThemeViewMixin, TemplateView):
 
         return context
 
-    def get_credential_template(self):
-        template_names = []
+    @cached_property
+    def db_certificate_template(self):
+        """Return the active DB-backed ProgramCertificateTemplate for this credential, or None."""
+        if not CUSTOM_PROGRAM_CERTIFICATE_TEMPLATES.is_enabled():
+            return None
         credential_type = self.user_credential.credential
+        org_keys = [org.key for org in credential_type.program_details.organizations]
+        return get_custom_program_certificate_template(
+            program_certificate=credential_type,
+            org_keys=org_keys,
+        )
 
+    def get_credential_template(self):
+        if self.db_certificate_template:
+            return engines["django"].from_string(self.db_certificate_template.template)
+
+        # Fallback: file-based template lookup (existing behaviour).
         # NOTE: In the future we will need to account for other types of credentials besides programs.
-        template_names += [
+        credential_type = self.user_credential.credential
+        template_names = [
             f"credentials/programs/{credential_type.program_uuid}/certificate.html",
             "credentials/programs/{type}/certificate.html".format(type=slugify(credential_type.program_details.type)),
         ]
-
         return self.select_theme_template(template_names)
+
+    def get_template_names(self):
+        if self.db_certificate_template:
+            return ["credentials/certificate_only.html"]
+        return super().get_template_names()
 
     def get_child_templates(self):
         return {
