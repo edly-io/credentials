@@ -15,11 +15,12 @@ from credentials.apps.api.v2.filters import UserCredentialFilter
 from credentials.apps.api.v2.permissions import CanReplaceUsername, UserCredentialPermissions
 from credentials.apps.api.v2.serializers import (
     CourseCertificateSerializer,
+    ProgramCertificateSerializer,
     UserCredentialCreationSerializer,
     UserCredentialSerializer,
     UserGradeSerializer,
 )
-from credentials.apps.credentials.models import CourseCertificate, UserCredential
+from credentials.apps.credentials.models import CourseCertificate, ProgramCertificate, UserCredential
 from credentials.apps.records.models import UserGrade
 
 
@@ -299,3 +300,22 @@ class CourseCertificateViewSet(
     serializer_class = CourseCertificateSerializer
     permission_classes = (permissions.IsAdminUser,)
     lookup_field = "course_id"
+
+
+class ProgramCertificateViewSet(
+    mixins.CreateModelMixin,
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet,
+):
+    """Upsert ProgramCertificate configs. Used by LMS to auto-create certs when programs are saved."""
+
+    queryset = ProgramCertificate.objects.all()
+    serializer_class = ProgramCertificateSerializer
+    permission_classes = (permissions.IsAdminUser,)
+
+    def get_queryset(self):
+        qs = super().get_queryset().filter(site=self.request.site)
+        program_uuid = self.request.query_params.get("program_uuid")
+        if program_uuid:
+            qs = qs.filter(program_uuid=program_uuid)
+        return qs

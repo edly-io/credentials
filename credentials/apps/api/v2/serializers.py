@@ -339,3 +339,22 @@ class CourseCertificateSerializer(serializers.ModelSerializer):
             },
         )
         return cert
+
+
+class ProgramCertificateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProgramCertificate
+        fields = ("id", "site", "program_uuid", "is_active", "title")
+        read_only_fields = ("id", "site")
+
+    def create(self, validated_data):
+        site = self.context["request"].site
+        cert, _ = ProgramCertificate.objects.get_or_create(
+            site=site,
+            program_uuid=validated_data["program_uuid"],
+            defaults={
+                "is_active": validated_data.get("is_active", True),
+                "title": validated_data.get("title", ""),
+            },
+        )
+        return cert

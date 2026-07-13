@@ -17,4 +17,5 @@ router = DefaultRouter()
 router.register(r"credentials", views.CredentialViewSet, basename="credentials")
 router.register(r"grades", views.GradeViewSet, basename="grades")
 router.register(r"course_certificates", views.CourseCertificateViewSet, basename="course_certificates")
+router.register(r"program_certificates", views.ProgramCertificateViewSet, basename="program_certificates")
 urlpatterns += router.urls
