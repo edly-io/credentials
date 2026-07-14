@@ -46,7 +46,15 @@ def send_updated_emails_for_program(request, username, program_certificate):
     user = get_user_by_username(username)
     program_uuid = program_certificate.program_uuid
 
-    program = Program.objects.prefetch_related("pathways").get(site=site, uuid=program_uuid)
+    try:
+        program = Program.objects.prefetch_related("pathways").get(site=site, uuid=program_uuid)
+    except Program.DoesNotExist:
+        logger.warning(
+            "send_updated_emails_for_program: Program %s not found in catalog (copy_catalog may not have run yet). "
+            "Skipping pathway email.",
+            program_uuid,
+        )
+        return
     pathways_set = frozenset(program.pathways.all())
 
     user_pathways = UserCreditPathway.objects.select_related("pathway").filter(
