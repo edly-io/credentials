@@ -9,7 +9,10 @@ from credentials.apps.api.v2 import views
 # endpoints, per:
 # https://openedx.atlassian.net/wiki/spaces/AC/pages/18350757/edX+REST+API+Conventions
 
-urlpatterns = [path("replace_usernames/", views.UsernameReplacementView.as_view(), name="replace_usernames")]
+urlpatterns = [
+    path("replace_usernames/", views.UsernameReplacementView.as_view(), name="replace_usernames"),
+    path("catalog/refresh/", views.CatalogRefreshView.as_view(), name="catalog_refresh"),
+]
 
 router = DefaultRouter()
 # URLs can not have hyphen as it is not currently supported by slumber

@@ -293,6 +293,36 @@ class UsernameReplacementView(APIView):
         return True
 
 
+class CatalogRefreshView(APIView):
+    """Trigger a catalog sync (equivalent to copy_catalog management command). Admin-only."""
+
+    permission_classes = (permissions.IsAdminUser,)
+
+    def post(self, request):
+        from django.contrib.sites.models import Site
+
+        from credentials.apps.catalog.utils import CatalogDataSynchronizer
+        from credentials.apps.core.models import SiteConfiguration
+
+        results = {}
+        for site in Site.objects.all():
+            site_configs = SiteConfiguration.objects.filter(site=site)
+            site_config = site_configs.get() if site_configs.exists() else None
+            if not site_config or not site_config.catalog_api_url or not site_config.records_enabled:
+                continue
+            synchronizer = CatalogDataSynchronizer(
+                site=site,
+                api_client=site_config.api_client,
+                catalog_api_url=site_config.catalog_api_url,
+            )
+            result_data = synchronizer.fetch_data()
+            results[site.domain] = {
+                model: changes for model, changes in result_data.items() if changes["added"] or changes["removed"]
+            }
+
+        return Response({"status": "ok", "changes": results}, status=status.HTTP_200_OK)
+
+
 class CourseCertificateViewSet(
     mixins.UpdateModelMixin, mixins.RetrieveModelMixin, mixins.CreateModelMixin, viewsets.GenericViewSet
 ):

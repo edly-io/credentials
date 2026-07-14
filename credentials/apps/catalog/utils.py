@@ -7,6 +7,7 @@ from django.db import transaction
 
 from credentials.apps.catalog.data import PathwayStatus
 from credentials.apps.catalog.models import Course, CourseRun, Organization, Pathway, Program
+from credentials.apps.credentials.models import ProgramCertificate
 
 
 logger = logging.getLogger(__name__)
@@ -230,6 +231,10 @@ class CatalogDataSynchronizer:
             },
         )
         self.add_item(self.PROGRAM, str(program.uuid))
+
+        ProgramCertificate.objects.filter(
+            site=self.site, program_uuid=program.uuid, program__isnull=True
+        ).update(program=program)
 
         program.authoring_organizations.clear()
         for org_data in data["authoring_organizations"]:
