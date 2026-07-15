@@ -321,7 +321,7 @@ class CourseCertificateSerializer(serializers.ModelSerializer):
         course_run = None
         try:
             # TODO use the catalog API, not direct reference
-            course_run = CourseRun.objects.get(key=course_id)
+            course_run = CourseRun.objects.get(key=course_id, course__site=site)
         except ObjectDoesNotExist:
             logger.warning(
                 "Course run certificate failed to create "
