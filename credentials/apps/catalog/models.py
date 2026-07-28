@@ -26,7 +26,7 @@ class Organization(TimeStampedModel):
     uuid = models.UUIDField(blank=False, null=False, verbose_name="UUID")
     key = models.CharField(max_length=255)
     name = models.CharField(max_length=255)
-    certificate_logo_image_url = models.CharField(max_length=512, null=True)
+    certificate_logo_image_url = models.TextField(null=True, blank=True)
 
     class Meta:
         unique_together = (("site", "uuid"),)
