@@ -378,7 +378,6 @@ class ProgramRecordCsvViewTests(SiteMixin, TestCase):
         body = list(csv_reader)
         metadata_titles = [
             "Program Name",
-            "Program Type",
             "Platform Provider",
             "Authoring Organization(s)",
             "Learner Name",
