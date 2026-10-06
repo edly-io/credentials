@@ -313,7 +313,6 @@ class ProgramRecordCsvView(RecordsEnabledMixin, View):
 
         user_metadata = [
             ["Program Name", program.get("name", None)],
-            ["Program Type", program.get("type_name", None)],
             ["Platform Provider", platform_name],
             ["Authoring Organization(s)", program.get("school", None)],
             ["Learner Name", learner.get("full_name", None)],
