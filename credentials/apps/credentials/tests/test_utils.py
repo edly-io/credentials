@@ -82,10 +82,7 @@ class ProgramCertificateIssuedEmailTests(SiteMixin, TestCase):
 
     def _build_expected_plaintext_email_body(self):
         return [
-            "Congratulations on completing the {} {} Program!".format(
-                self.program.title,
-                self.program.type,
-            ),
+            "Congratulations on completing the {} Program!".format(self.program.title),
             "Sincerely,",
             "The {} Team".format(self.site.siteconfiguration.platform_name),
             textwrap.dedent(self.default_config.plaintext_template),
@@ -93,7 +90,7 @@ class ProgramCertificateIssuedEmailTests(SiteMixin, TestCase):
 
     def _build_expected_html_email_body(self):
         return [
-            "Congratulations on completing the {} {} Program!".format(self.program.title, self.program.type),
+            "Congratulations on completing the {} Program!".format(self.program.title),
             "Sincerely,<br/>The {} Team".format(self.site.siteconfiguration.platform_name),
             self.default_config.html_template,
         ]
@@ -121,9 +118,7 @@ class ProgramCertificateIssuedEmailTests(SiteMixin, TestCase):
         Utility method that verifies the subject text of the automated emails being sent to
         learners.
         """
-        expected_subject = "Congratulations for finishing your {} {} Program!".format(
-            self.program.title, self.program.type
-        )
+        expected_subject = "Congratulations for finishing your {} Program!".format(self.program.title)
         self.assertEqual(email_subject, expected_subject)
 
     def _assert_email_body_contents(self, email_body, fragments):
