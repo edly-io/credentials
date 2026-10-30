@@ -2,7 +2,10 @@
 
 from unittest import mock
 
+from django.conf import settings
 from django.test import TestCase
+from django.utils.module_loading import import_string
+from social_django.utils import load_backend, load_strategy
 
 from credentials.apps.core.tests.factories import UserFactory
 from credentials.apps.core.utils import activate_user, update_full_name
@@ -45,3 +48,25 @@ class UtilsTests(TestCase):
         activate_user(strategy, {}, self.user)
         self.assertTrue(self.user.is_active)
         self.assertFalse(strategy.storage.user.changed.called)
+
+    def test_activate_user_is_in_the_sign_in_pipeline(self):
+        """The step is listed in the sign-in pipeline and can be imported by its dotted path."""
+        path = "credentials.apps.core.utils.activate_user"
+        self.assertIn(path, settings.SOCIAL_AUTH_PIPELINE)
+        self.assertIs(import_string(path), activate_user)
+
+    def test_activate_user_runs_in_the_social_auth_pipeline(self):
+        """The social-auth runner calls the step with its own arguments and the user is saved as active."""
+        self.user.is_active = False
+        self.user.save()
+        backend = load_backend(load_strategy(), "edx-oauth2", redirect_uri=None)
+
+        backend.run_pipeline(
+            pipeline=("credentials.apps.core.utils.activate_user",),
+            pipeline_index=0,
+            user=self.user,
+            details={},
+        )
+
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.is_active)
