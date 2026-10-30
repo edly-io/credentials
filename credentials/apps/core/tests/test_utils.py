@@ -5,7 +5,7 @@ from unittest import mock
 from django.test import TestCase
 
 from credentials.apps.core.tests.factories import UserFactory
-from credentials.apps.core.utils import update_full_name
+from credentials.apps.core.utils import activate_user, update_full_name
 
 
 class UtilsTests(TestCase):
@@ -28,3 +28,20 @@ class UtilsTests(TestCase):
         update_full_name(strategy, {"full_name": "Bort"}, self.user)
         self.assertEqual(self.user.full_name, "Bort")
         self.assertTrue(strategy.storage.user.changed.called)
+
+    def test_activate_user_no_user(self):
+        # Just test that we don't blow up
+        activate_user(mock.MagicMock(), {})
+
+    def test_activate_user_inactive_user(self):
+        self.user.is_active = False
+        strategy = mock.MagicMock()
+        activate_user(strategy, {}, self.user)
+        self.assertTrue(self.user.is_active)
+        strategy.storage.user.changed.assert_called_once_with(self.user)
+
+    def test_activate_user_already_active(self):
+        strategy = mock.MagicMock()
+        activate_user(strategy, {}, self.user)
+        self.assertTrue(self.user.is_active)
+        self.assertFalse(strategy.storage.user.changed.called)

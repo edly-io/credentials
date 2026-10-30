@@ -348,6 +348,7 @@ SOCIAL_AUTH_PIPELINE = (
     # Credentials-specific pipeline below
     "credentials.apps.core.utils.update_full_name",
     "credentials.apps.core.utils.update_lms_user_id",
+    "credentials.apps.core.utils.activate_user",
 )
 
 # Set these to the correct values for your OAuth2 provider (e.g., devstack)
