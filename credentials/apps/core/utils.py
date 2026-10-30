@@ -21,6 +21,19 @@ def update_lms_user_id(strategy, details, user=None, *_args, **_kwargs):  # pyli
             strategy.storage.user.changed(user)
 
 
+def activate_user(strategy, details, user=None, *_args, **_kwargs):  # pylint: disable=keyword-arg-before-vararg
+    """
+    Mark the user active when they sign in through the LMS.
+
+    Only an active LMS user can complete this sign-in, so a user who reaches this step is active on the LMS.
+    The Credentials row can still be inactive (it was copied in that way, or deactivated here). The sign-in then
+    ends at the login page instead of the page the user asked for, so the Credentials row follows the LMS.
+    """
+    if user and not user.is_active:
+        user.is_active = True
+        strategy.storage.user.changed(user)
+
+
 def _choices(*values):
     """
     Helper for use with model field 'choices'.
