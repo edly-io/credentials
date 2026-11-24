@@ -1,3 +1,4 @@
+from datetime import datetime, timezone as dt_timezone
 from unittest import mock
 from unittest.mock import patch
 
@@ -143,6 +144,68 @@ class CredlyBadgeTemplateIssuerTestCase(TestCase):
             # Check if the user credential state is updated to "error"
             user_credential.refresh_from_db()
             self.assertEqual(user_credential.state, "error")
+
+    def test_get_recipient_name(self):
+        cases = [
+            ("Ada", "Lovelace", "Augusta King", ("Ada", "Lovelace")),
+            ("", "", "Ada Lovelace", ("Ada", "Lovelace")),
+            ("", "", "  Ada   Lovelace  ", ("Ada", "Lovelace")),
+            ("", "", "Mary Ann  Van Dyke", ("Mary", "Ann Van Dyke")),
+            ("", "", "Ada", ("Ada", "Ada")),
+            ("", "", None, ("learner42", "learner42")),
+            ("", "", "   ", ("learner42", "learner42")),
+            ("Ada", "", "Ada Lovelace", ("Ada", "Lovelace")),
+            ("  ", "  ", "Ada Lovelace", ("Ada", "Lovelace")),
+            (" Ada ", " Lovelace ", None, ("Ada", "Lovelace")),
+            ("Ada", "", None, ("Ada", "Ada")),
+            ("", "Lovelace", None, ("Lovelace", "Lovelace")),
+        ]
+        for first_name, last_name, full_name, expected in cases:
+            with self.subTest(case=(first_name, last_name, full_name)):
+                user = User(username="learner42", first_name=first_name, last_name=last_name, full_name=full_name)
+                self.assertEqual(self.issuer.get_recipient_name(user), expected)
+
+    def _create_pending_user_credential(self):
+        return self.issued_user_credential_type.objects.create(
+            username="test_user",
+            credential_content_type=ContentType.objects.get_for_model(self.badge_template),
+            credential_id=self.badge_template.id,
+            state=CredlyBadge.STATES.pending,
+            uuid=self.fake.uuid4(),
+            external_uuid=self.fake.uuid4(),
+        )
+
+    def _issue_with_fixed_now(self, fixed_now):
+        user_credential = self._create_pending_user_credential()
+        with patch.object(
+            CredlyAPIClient, "issue_badge", return_value={"data": {"id": self.fake.uuid4(), "state": "pending"}}
+        ) as mock_issue_badge:
+            with patch("credentials.apps.badges.issuers.timezone.now", return_value=fixed_now):
+                self.issuer().issue_credly_badge(user_credential=user_credential)
+        return mock_issue_badge.call_args.args[0]
+
+    def test_issue_credly_badge_payload_uses_full_name_and_now(self):
+        User.objects.filter(username="test_user").update(full_name="Ada Lovelace")
+        fixed_now = datetime(2030, 1, 2, 3, 4, 5, tzinfo=dt_timezone.utc)
+
+        payload = self._issue_with_fixed_now(fixed_now)
+
+        self.assertEqual(payload.issued_to_first_name, "Ada")
+        self.assertEqual(payload.issued_to_last_name, "Lovelace")
+        self.assertEqual(payload.issued_at, "2030-01-02 03:04:05 +0000")
+        self.assertEqual(payload.recipient_email, "test_email@fff.com")
+        self.assertEqual(payload.badge_template_id, str(self.badge_template.uuid))
+
+    def test_issue_credly_badge_issued_at_ignores_template_created(self):
+        self.issued_credential_type.objects.filter(pk=self.badge_template.pk).update(
+            created=datetime(2020, 5, 6, 7, 8, 9, tzinfo=dt_timezone.utc)
+        )
+        fixed_now = datetime(2030, 1, 2, 3, 4, 5, tzinfo=dt_timezone.utc)
+
+        payload = self._issue_with_fixed_now(fixed_now)
+
+        self.assertEqual(payload.issued_at, "2030-01-02 03:04:05 +0000")
+        self.assertFalse(payload.issued_at.startswith("2020-05-06"))
 
     @patch.object(CredlyAPIClient, "revoke_badge")
     def test_revoke_credly_badge_success(self, mock_revoke_badge):
