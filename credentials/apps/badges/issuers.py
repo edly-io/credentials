@@ -148,8 +148,13 @@ class CredlyBadgeTemplateIssuer(BadgeTemplateIssuer):
         """
 
         full_name_parts = (user.full_name or "").split()
-        first_name = (user.first_name or "").strip() or (full_name_parts[0] if full_name_parts else "")
-        last_name = (user.last_name or "").strip() or " ".join(full_name_parts[1:])
+        profile_first_name = (user.first_name or "").strip()
+        full_name_first = full_name_parts[0] if full_name_parts else ""
+        full_name_rest = " ".join(full_name_parts[1:])
+        full_name_matches = not profile_first_name or profile_first_name.lower() == full_name_first.lower()
+
+        first_name = profile_first_name or full_name_first
+        last_name = (user.last_name or "").strip() or (full_name_rest if full_name_matches else "")
         first_name = first_name or last_name or user.username
         return first_name, last_name or first_name
 

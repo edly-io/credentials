@@ -155,6 +155,8 @@ class CredlyBadgeTemplateIssuerTestCase(TestCase):
             ("", "", None, ("learner42", "learner42")),
             ("", "", "   ", ("learner42", "learner42")),
             ("Ada", "", "Ada Lovelace", ("Ada", "Lovelace")),
+            ("ada", "", "Ada Lovelace", ("ada", "Lovelace")),
+            ("Grace", "", "Ada Lovelace", ("Grace", "Grace")),
             ("  ", "  ", "Ada Lovelace", ("Ada", "Lovelace")),
             (" Ada ", " Lovelace ", None, ("Ada", "Lovelace")),
             ("Ada", "", None, ("Ada", "Ada")),
