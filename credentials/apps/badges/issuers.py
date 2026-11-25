@@ -6,6 +6,7 @@ from datetime import datetime
 
 from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
+from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from credentials.apps.badges.accredible.api_client import AccredibleAPIClient
@@ -140,6 +141,23 @@ class CredlyBadgeTemplateIssuer(BadgeTemplateIssuer):
     issued_credential_type = CredlyBadgeTemplate
     issued_user_credential_type = CredlyBadge
 
+    @staticmethod
+    def get_recipient_name(user):
+        """
+        Returns the non-empty (first_name, last_name) pair Credly requires for a badge recipient.
+        """
+
+        full_name_parts = (user.full_name or "").split()
+        profile_first_name = (user.first_name or "").strip()
+        full_name_first = full_name_parts[0] if full_name_parts else ""
+        full_name_rest = " ".join(full_name_parts[1:])
+        full_name_matches = not profile_first_name or profile_first_name.lower() == full_name_first.lower()
+
+        first_name = profile_first_name or full_name_first
+        last_name = (user.last_name or "").strip() or (full_name_rest if full_name_matches else "")
+        first_name = first_name or last_name or user.username
+        return first_name, last_name or first_name
+
     def issue_credly_badge(self, *, user_credential):
         """
         Requests Credly service for external badge issuing based on internal user credential (CredlyBadge).
@@ -148,12 +166,14 @@ class CredlyBadgeTemplateIssuer(BadgeTemplateIssuer):
         user = get_user_by_username(user_credential.username)
         badge_template = user_credential.credential
 
+        first_name, last_name = self.get_recipient_name(user)
+
         credly_badge_data = CredlyBadgeData(
             recipient_email=user.email,
-            issued_to_first_name=(user.first_name or user.username),
-            issued_to_last_name=(user.last_name or user.username),
+            issued_to_first_name=first_name,
+            issued_to_last_name=last_name,
             badge_template_id=str(badge_template.uuid),
-            issued_at=badge_template.created.strftime("%Y-%m-%d %H:%M:%S %z"),
+            issued_at=timezone.now().strftime("%Y-%m-%d %H:%M:%S %z"),
         )
 
         try:
